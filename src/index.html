@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>payrollApp</title>
+    <!-- <link href="style.css" rel="stylesheet" type="text/css" /> -->
+    <script src="https://unpkg.com/@metamask/detect-provider/dist/detect-provider.min.js"></script>
+
+  </head>
+  <body>
+    <form id="createEmployee">
+      <h3>Employee Address</h3>
+      <input id="address" type="text" placeholder="0x...">
+      <h3>Employee Salary</h3>
+      <input id="salary" type="text" placeholder="Enter Dollar Amount">
+      <h3>Payment Interval</h3>
+      <input id="interval" type="text" placeholder="Days Between Payments">
+      <p>
+        <button type="submit">Create Employee</button>
+      </p>
+    </form>
+    <p>
+      <form id="fundingPayroll">
+        <input id="fundingAmount" type="text" placeholder="Deposit Amount">
+        <button type="submit">Fund Payroll</button> <h1 id="fundingDisplay"></h1>
+      </form>
+    </p>
+    <p>
+      <form id="payEmployee">
+        <input id="payId" type="text" placeholder="Employee Id">
+        <button type="submit">Pay Employee</button>
+      </form>
+      <p>
+        <button id="enableEthereumButton">Enable Ethereum</button>
+      </p>
+
+        <!-- <script src="index.js"></script> -->
+        <script src="./dist/bundle.js"></script>
+
+
+
+
+  </body>
+</html>
