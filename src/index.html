@@ -10,6 +10,8 @@
   </head>
   <body>
     <form id="createEmployee">
+      <h3> Employee Name</h3>
+      <input id="employeeName" type="text" placeholder="Full Name">
       <h3>Employee Address</h3>
       <input id="address" type="text" placeholder="0x...">
       <h3>Employee Salary</h3>
@@ -28,12 +30,25 @@
     </p>
     <p>
       <form id="payEmployee">
-        <input id="payId" type="text" placeholder="Employee Id">
+        <input id="paymentAddress" type="text" placeholder="Employee Address">
         <button type="submit">Pay Employee</button>
       </form>
+    </p>
+    <p>
+      <form id="deleteEmployee">
+        <input id="deleteAddress" type="text" placeholder="Employee Address">
+        <button type="submit">Delete Employee</button>
+      </form>
+    </p>
       <p>
         <button id="enableEthereumButton">Enable Ethereum</button>
       </p>
+
+      <h2>Employee List</h2>
+      <div id="employeeDisplay">
+        
+      
+        </div>
 
         <!-- <script src="index.js"></script> -->
         <script src="./dist/bundle.js"></script>

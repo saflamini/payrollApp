@@ -131,6 +131,5 @@ contract Payroll {
         //add the payment amount to total earnings of the employee
         employees[_address].earnings += payment;
     }
-    
-    
+
 }
