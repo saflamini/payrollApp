@@ -18,3 +18,5 @@ Future roadmap:
 3) Support stablecoin payments - likely with Celo or USDC.
 
 We're also considering additional functionality like automatic handling of tax jurisdiction via additional smart contract functions. If we can help users handle crypto tax, it'd be huge.
+
+Test
