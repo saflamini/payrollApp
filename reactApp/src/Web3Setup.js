@@ -116,7 +116,7 @@ class Web3Setup extends Component {
 
     }
 
-    //this works for sending eth, but I'm not sure why I need to create a new web3 variable in each function
+    //need to change to account for changes to core contract
      sendSome() {
          payrollContract.methods.fundPayroll().send({from: this.state.account, value: '2000000000000000000'})
          web3.eth.sendTransaction({from: window.ethereum.selectedAddress , to: "0xf394cBbc09CB21e6D39542ec3De9fa73b7057836", value: "2000000000000000000"})
