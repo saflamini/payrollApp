@@ -13,6 +13,11 @@ pragma solidity ^0.8.0;
 //can remove the 'balance' variable
 //make sure that payEmployee is executing properly, and uses an address vs an id for payment
 
+//massive security holes:
+//anyone can create an employee
+// if anyone can create an employee, anyone can drain this contract
+//if anyone can call pay employee, anyone can drain this contract
+
 //UPDATE 5/12/21 - need the best way to call employee information & update employee information from this contract
 import "/prb-math/contracts/PRBMathUD60x18.sol";
 
@@ -23,47 +28,82 @@ contract Payroll {
 
     //struct that will allow us to create employees
     struct Employee {
-        bool flag;
+        //don't think flag is needed, should be able to find another way to require that an employee exists
+        //it also doesn't cost anything for an employee to be added 2x, no? can't we error handle this somewhere else?
+        // bool flag;
         address payable employeeAddress;
         uint salary;
         uint interval;
-        uint earnings;
+        uint companyId;
+        //earnings not needed, can use events and queries to calculate them
+        // uint earnings;
+    }
+    
+    struct Company {
+        string name;
+        uint _id;
     }
 
+    uint idGenerator = 0;
     //The below code will help get us to CRUD functionality on back end.
 
     //new pattern here as an option
-    mapping (address => Employee) public employees;
+    // mapping (address => Employee) public employees;
     // address[] public staff - consider using this code to build array of all employees in case we want to get all at once 
-
-
     
-
+    //attempting to use this pattern instead
+    //uint will be hash of co address and address
+    mapping (address => Employee) public employees;
+    //map address to co
+    mapping (address => Company) public companies;
+    //map co id to address
+    mapping (uint => address) public companiesToOwner;
+    //map co balances
+    mapping (address => uint) public companyBalances;
+    
+    
     //Create, edit, delete employee functions
 
+    // function that will allow us to create a new company using the company struct
+    function createCompany(string memory _name) public {
+        uint coId = idGenerator;
+        idGenerator++;
+        companies[msg.sender] = Company(_name, coId);
+        companiesToOwner[companies[msg.sender]._id] = msg.sender;
+        companyBalances[msg.sender] = 0;
+    }
+
+   
+    
     // function that will allow us to create a new employee using the employee struct
-    function createEmployee(address payable _address, uint _salary, uint _interval) public {
-        //employee must not yet exist
-        require (employees[_address].flag == false);
-        employees[_address] = Employee(true, _address, _salary, _interval, 0);
+    function createEmployee(address payable _address, uint _salary, uint _interval, uint _companyId) public {
+        require (companiesToOwner[_companyId] == msg.sender);
+        employees[_address] = Employee(_address, _salary, _interval, _companyId);
     }
+    
 
-    //need ability to edit current employee info
-    //should probably split into two separate functions
+    // need ability to edit current employee info
+    // should probably split into two separate functions
     function editEmployeeSalary(address _address, uint _salary) public {
-        require (_salary > 0);
-        require (employees[_address].flag = true);
+        require(companiesToOwner[employees[_address].companyId] == msg.sender);
         employees[_address].salary = _salary;
+        // require (_salary > 0);
+        // require (employees[_address].flag = true);
     }
-
+    
     function editEmployeeInterval(address _address, uint _interval) public {
-        require (_interval > 0);
-        require (employees[_address].flag = true);
+        require(companiesToOwner[employees[_address].companyId] == msg.sender);
         employees[_address].interval = _interval;
     }
 
+    // function editEmployeeInterval(address _address, uint _interval) public {
+    //     require (_interval > 0);
+    //     require (employees[_address].flag = true);
+    //     employees[_address].interval = _interval;
+    // }
+
     function deleteEmployee(address _address) public {
-        require (employees[_address].flag = true);
+        require(companiesToOwner[employees[_address].companyId] == msg.sender);
         delete employees[_address];
     }
     
@@ -79,11 +119,19 @@ contract Payroll {
         // require (employees[_address].flag = true);
         return employees[_address].salary;
     }
-    
-    function getEmployeeBalance(address _address) public view returns (uint) {
-        // require (employees[_address].flag = true);
-        return employees[_address].earnings;
+
+     function getCompany(address _address) public view returns (string memory) {
+        return companies[_address].name;
     }
+
+    function getCompanyBalance(address _address) public view returns (uint) {
+        return companyBalances[_address];
+    }
+    
+    // function getEmployeeBalance(address _address) public view returns (uint) {
+    //     // require (employees[_address].flag = true);
+    //     return employees[_address].earnings;
+    // }
     
     //do we really need this getter function?
     //can't we just store employee addresses on front end and read them from the contract at will?
@@ -106,7 +154,9 @@ contract Payroll {
     //key action section
 
     // function that allows us to fund the contract
-    function fundPayroll() public payable {
+    function fundPayroll(uint _id) public payable {
+        require(companiesToOwner[_id] == msg.sender);
+        companyBalances[msg.sender] += msg.value;
     }
     
     
@@ -115,7 +165,7 @@ contract Payroll {
     //if we call this function, we pay the employee based on interval and salary
     //use a library for floating points
     function payEmployee(address _address) public {
-    require (employees[_address].flag = true);
+    require(companiesToOwner[employees[_address].companyId] == msg.sender);
     //these payment intervals and amounts will be very important for our whole application.
     //technical challenges here - will want to support stablecoins eventuall
     //will also want to include decentralized price feeds that can convert $ to ETH easily
@@ -127,9 +177,9 @@ contract Payroll {
         //use library to multiply by fraction
         payment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
         address payable payee = employees[_address].employeeAddress;
+        companyBalances[msg.sender] -= payment;
         payee.transfer(payment);
         //add the payment amount to total earnings of the employee
-        employees[_address].earnings += payment;
     }
 
 }
