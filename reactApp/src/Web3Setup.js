@@ -22,6 +22,7 @@ class Web3Setup extends Component {
             company: "Please create a new company or connect a wallet",
             companyId: null
         };
+
         this.setup = this.setup.bind(this);
         this.isConnected = this.isConnected.bind(this);
         this.disconnected = this.disconnected.bind(this);
@@ -33,8 +34,6 @@ class Web3Setup extends Component {
 
     componentDidMount() {
         this.setup()
-        // this.getCompany()
-
     }
 
     isConnected() {
@@ -42,10 +41,13 @@ class Web3Setup extends Component {
     
         if (accts.length === 0) {
             console.log('not connected')
-            return this.setState({connected: false})
+            this.setState({connected: false})
         } else {
             console.log('connected')
-            return this.setState({connected: true})
+            this.setState({account: accts[0]})
+            this.setState({connected: true})
+            this.getCompany();
+            this.getCompanyId();
         }
     }
 
@@ -58,7 +60,7 @@ class Web3Setup extends Component {
 
         // This function detects most providers injected at window.ethereum
   
-        const provider = await detectEthereumProvider();
+        // const provider = await detectEthereumProvider();
       
         if (typeof window.ethereum !== 'undefined') {
            
@@ -68,6 +70,8 @@ class Web3Setup extends Component {
           else {
             console.log('you should consider metamask!')
           }
+
+
           const acct = await window.ethereum.request({ method: 'eth_accounts' })
           
           if (acct.length > 0) {
@@ -75,6 +79,8 @@ class Web3Setup extends Component {
                   connected: true, 
                   account: acct
                 })
+                console.log('here')
+
             console.log(this.state.account);
           }
           
@@ -103,16 +109,17 @@ class Web3Setup extends Component {
             } else if (accounts[0] !== currentAccount) {
                 currentAccount = accounts[0];
             }
+
         }
 
         if (currentAccount !== null) {
             this.setState({account: currentAccount})
+            console.log('here')
+
             this.getCompany();
             this.getCompanyId();
         }
 
-
-        // const web3 = new Web3(window.ethereum.currenProvider || "http://localhost:7545")
         const accountList = await window.ethereum.request({ method: 'eth_accounts' })
         this.setState({ account: accountList[0] })
 
@@ -125,14 +132,17 @@ class Web3Setup extends Component {
 
     }
 
+
     //gets the company name for display
     async getCompany() {
         let co = await payrollContract.methods.getCompany(this.state.account).call({from: this.state.account});
-        if (co.length !== 0)
+        if (co.length !== 0 && co) {
         this.setState({
             company: co
-        })       
-        console.log(this.state.company)
+        })}  
+        else if (co.length === 0) {
+            this.setState({company: "Please create a new company or connect a wallet"})
+        }
     }
 
     //gets company ID for employee creation handling
@@ -149,7 +159,7 @@ class Web3Setup extends Component {
 
     render() {
 
-  
+        
 
         
         return (

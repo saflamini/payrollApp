@@ -14,13 +14,13 @@ class CompanyInfo extends Component {
         this.getCompany = this.getCompany.bind(this);
     }
 
-    componentDidMount() {
-        // let co = await payrollContract.methods.getCompany(this.props.account).call({from: this.props.account});
-        // console.log(co)
-        // this.setState({
-        //     company: co
-        // })      
-    }
+    // componentDidMount() {
+    //     // let co = await payrollContract.methods.getCompany(this.props.account).call({from: this.props.account});
+    //     // console.log(co)
+    //     // this.setState({
+    //     //     company: co
+    //     // })      
+    // }
    
     createCompany(name) {
         payrollContract.methods.createCompany(name).send({from: this.props.account, gas: 6721975})

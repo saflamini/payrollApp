@@ -26,7 +26,8 @@ class EmployeeList extends Component {
         this.updateInterval = this.updateInterval.bind(this)
     }
 
-
+    //this creates an employee on the back end.
+    //but how to render them based on the connected company??
     addEmployee(employee, address) {
         let newEmployee = {...employee, id: uuidv4()}
         payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
