@@ -5,38 +5,36 @@ import { payrollContract } from './config';
 import detectEthereumProvider from '@metamask/detect-provider';
 import EmployeeList from './EmployeeList';
 import { Contract } from 'web3-eth-contract';
+import { payrollAddress } from './config';
+import './Web3Setup.css';
+import ConnectWallet from './ConnectWallet';
+import CompanyInfo from "./CompanyInfo";
 
 class Web3Setup extends Component {
   
     constructor(props) {
         super(props);
-        console.log(web3)
-        console.log(payrollContract)
+     
     
         this.state = {
             connected: false,
-            account: ""
+            account: "",
+            company: "Please create a new company or connect a wallet",
+            companyId: null
         };
         this.setup = this.setup.bind(this);
-        this.enableWallet = this.enableWallet.bind(this);
         this.isConnected = this.isConnected.bind(this);
         this.disconnected = this.disconnected.bind(this);
-        this.sendSome = this.sendSome.bind(this);
+        this.getCompany = this.getCompany.bind(this);
+        this.getCompanyId = this.getCompanyId.bind(this);
+
     }
 
-    enableWallet() {
-        window.ethereum.request({ method: 'eth_requestAccounts' })
-        .then
-        (window.ethereum.request({ method: 'eth_accounts'}))
-        .then(console.log)
-        .then(
-            this.setState({connected: true})
-        )
-    }
 
-   
     componentDidMount() {
         this.setup()
+        // this.getCompany()
+
     }
 
     isConnected() {
@@ -55,6 +53,7 @@ class Web3Setup extends Component {
         this.setState({connected: false})
     }
 
+
     async setup() {
 
         // This function detects most providers injected at window.ethereum
@@ -70,9 +69,13 @@ class Web3Setup extends Component {
             console.log('you should consider metamask!')
           }
           const acct = await window.ethereum.request({ method: 'eth_accounts' })
-          console.log(acct)
+          
           if (acct.length > 0) {
-              this.setState({connected: true})
+              this.setState({
+                  connected: true, 
+                  account: acct
+                })
+            console.log(this.state.account);
           }
           
           let currentAccount = null;
@@ -86,8 +89,6 @@ class Web3Setup extends Component {
                 console.error(err);
             });
         
-       
-
             // Note that this event is emitted on page load.
             // If the array of accounts is non-empty, you're already
             // connected.
@@ -101,43 +102,64 @@ class Web3Setup extends Component {
            
             } else if (accounts[0] !== currentAccount) {
                 currentAccount = accounts[0];
-              
             }
-         
- 
         }
+
+        if (currentAccount !== null) {
+            this.setState({account: currentAccount})
+            this.getCompany();
+            this.getCompanyId();
+        }
+
+
         // const web3 = new Web3(window.ethereum.currenProvider || "http://localhost:7545")
         const accountList = await window.ethereum.request({ method: 'eth_accounts' })
-        const accounts = await web3.eth.getAccounts()
         this.setState({ account: accountList[0] })
 
-       
-        return provider;    
+        if (acct.length > 0) {
+            //if we have a connected metamask account, run getCompany and get companyId
+            //these two functions also run if a reload occurs
+            this.getCompany()
+            this.getCompanyId();
+        }
 
     }
 
-    //need to change to account for changes to core contract
-     sendSome() {
-         payrollContract.methods.fundPayroll().send({from: this.state.account, value: '2000000000000000000'})
-         web3.eth.sendTransaction({from: window.ethereum.selectedAddress , to: "0xf394cBbc09CB21e6D39542ec3De9fa73b7057836", value: "2000000000000000000"})
-        .then(function(receipt){
-        console.log(receipt)
-        });
-}
+    //gets the company name for display
+    async getCompany() {
+        let co = await payrollContract.methods.getCompany(this.state.account).call({from: this.state.account});
+        if (co.length !== 0)
+        this.setState({
+            company: co
+        })       
+        console.log(this.state.company)
+    }
+
+    //gets company ID for employee creation handling
+    async getCompanyId() {
+        let coId = await payrollContract.methods.getCompanyId(this.state.account).call({from: this.state.account});
+        let co = await payrollContract.methods.getCompany(this.state.account).call({from: this.state.account})
+        if (co !== "")
+        this.setState({
+            companyId: coId
+        })       
+        console.log(this.state.companyId)
+    }
 
 
     render() {
+
+  
+
         
         return (
             <div>
                 {this.state.connected? 
-                <span>Connected</span>
-                : <button onClick={this.enableWallet}>Connect Wallet</button>
+                <span className="connectWallet">{this.state.account}</span>
+                : <ConnectWallet />
                 }
-                <p>
-                    <button onClick={this.sendSome}>Fund Payroll</button>
-                    </p>
-                <EmployeeList />
+                <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany}/>
+                <EmployeeList companyId={this.state.companyId} companyAddress={this.state.account}/>
                 
             </div>
         )

@@ -1,0 +1,11 @@
+.connectWallet {
+    position:absolute;
+    top:0;
+    right:0;
+    border: 2px color blue;
+    background-color: black;
+    color: white;
+    padding: 5px;
+    border-radius: 1%;
+    margin: .25%;
+}

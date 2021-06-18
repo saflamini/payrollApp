@@ -3,6 +3,7 @@ import EmployeeForm from "./EmployeeForm";
 import Employee from "./Employee";
 import { payrollABI } from './config';
 import { payrollAddress } from './config';
+import { payrollContract } from './config';
 import { v4 as uuidv4 } from 'uuid';
 import Web3 from 'web3';
 
@@ -13,7 +14,7 @@ class EmployeeList extends Component {
         super(props);
         this.state ={
             employees: [
-                {name: 'Sam Flamini', salary: 100000, interval: 26, id: uuidv4()}
+                {name: 'Sam Flamini', address: "", salary: 100000, interval: 26, id: uuidv4()}
             ]
         }
 
@@ -26,13 +27,22 @@ class EmployeeList extends Component {
     }
 
 
-
-    addEmployee(employee) {
+    addEmployee(employee, address) {
         let newEmployee = {...employee, id: uuidv4()}
+        payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
+        .then(
         this.setState(state => ({ 
             employees: [...state.employees, newEmployee]
         }))
+        )
     }
+
+    // addEmployee(employee) {
+    //     let newEmployee = {...employee, id: uuidv4()}
+    //     this.setState(state => ({ 
+    //         employees: [...state.employees, newEmployee]
+    //     }))
+    // }
 
     fundPayroll(amount) {
         
@@ -97,7 +107,6 @@ class EmployeeList extends Component {
 
     render() {
       
-
         return (
             <div>
                 <h1>Employee List</h1>

@@ -61,16 +61,22 @@ contract Payroll {
     //map co balances
     mapping (address => uint) public companyBalances;
     
-    
+    event payrollFunded(uint indexed _id, address indexed _address, uint indexed _amount);
+    event employeePaid(address indexed _address, uint indexed _amount, uint indexed _companyId);
+    event companyCreated(address indexed _address, uint _id, string indexed _name);
+
     //Create, edit, delete employee functions
 
     // function that will allow us to create a new company using the company struct
+    //should we return the ID? probably
     function createCompany(string memory _name) public {
         uint coId = idGenerator;
         idGenerator++;
-        companies[msg.sender] = Company(_name, coId);
+        Company memory company = Company(_name, coId);
+        companies[msg.sender] = company;
         companiesToOwner[companies[msg.sender]._id] = msg.sender;
         companyBalances[msg.sender] = 0;
+        emit companyCreated(msg.sender, coId, _name);
     }
 
    
@@ -124,6 +130,10 @@ contract Payroll {
         return companies[_address].name;
     }
 
+    function getCompanyId(address _address) public view returns (uint) {
+        return companies[_address]._id;
+    }
+
     function getCompanyBalance(address _address) public view returns (uint) {
         return companyBalances[_address];
     }
@@ -157,6 +167,7 @@ contract Payroll {
     function fundPayroll(uint _id) public payable {
         require(companiesToOwner[_id] == msg.sender);
         companyBalances[msg.sender] += msg.value;
+        emit payrollFunded(_id, msg.sender, msg.value);
     }
     
     
@@ -180,6 +191,7 @@ contract Payroll {
         companyBalances[msg.sender] -= payment;
         payee.transfer(payment);
         //add the payment amount to total earnings of the employee
+        emit employeePaid(_address, payment, employees[_address].companyId);
     }
 
 }

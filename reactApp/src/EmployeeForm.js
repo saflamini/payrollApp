@@ -5,6 +5,7 @@ class EmployeeForm extends Component {
         super(props);
         this.state = {
             name: '',
+            address: '',
             salary: '',
             interval: ''
         }
@@ -21,7 +22,7 @@ class EmployeeForm extends Component {
     handleSubmit(evt) {
         evt.preventDefault();
         this.props.addEmployee(this.state);
-        this.setState({name: '', salary: '', interval: ''})
+        this.setState({name: '', address: '', salary: '', interval: ''})
     }
 
     render() {
@@ -32,6 +33,10 @@ class EmployeeForm extends Component {
                 <p>
                     <label htmlFor="name">Name </label>
                     <input type="text" name="name" value={this.state.name} onChange={this.handleChange}></input>
+                </p>
+                <p>
+                    <label htmlFor="address">Ethereum Address </label>
+                    <input type="text" name="address" value={this.state.address} onChange={this.handleChange}></input>
                 </p>
                 <p>
                     <label htmlFor="salary">Salary </label>
