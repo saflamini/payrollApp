@@ -14,13 +14,13 @@ class CompanyInfo extends Component {
         this.getCompany = this.getCompany.bind(this);
     }
 
-    componentDidMount() {
-        // let co = await payrollContract.methods.getCompany(this.props.account).call({from: this.props.account});
-        // console.log(co)
-        // this.setState({
-        //     company: co
-        // })      
-    }
+    // componentDidMount() {
+    //     // let co = await payrollContract.methods.getCompany(this.props.account).call({from: this.props.account});
+    //     // console.log(co)
+    //     // this.setState({
+    //     //     company: co
+    //     // })      
+    // }
    
     createCompany(name) {
         payrollContract.methods.createCompany(name).send({from: this.props.account, gas: 6721975})
@@ -38,12 +38,13 @@ class CompanyInfo extends Component {
 
         return (
             <div>
+                {this.props.company === "Please create a new company or connect a wallet"?
                 <CompanyForm 
                 createCompany={this.createCompany}
-                />
-                <h3>Company Address: {this.props.account}</h3>
-                <h4>Company Name: {this.props.company}</h4>
-                <button onClick={this.getCompany}>Get Company</button>
+                />:<h1>{this.props.company}</h1>
+                }
+                {/* <h3>Company Address: {this.props.account}</h3> */}
+                {/* <button onClick={this.getCompany}>Get Company</button> */}
             </div>
         )
     }

@@ -61,7 +61,8 @@ class Employee extends Component {
 
     render() {
         const employeeObject = {
-            name: this.props.name,
+            // name: this.props.name,
+            address: this.props.address,
             salary: this.props.salary,
             interval: this.props.interval
         }
@@ -113,14 +114,17 @@ class Employee extends Component {
             let result;
             result = (
             <div>
-                <p>
+                {/* <p>
                     {employeeObject.name} <button onClick={this.nameEdit}>🖊</button>
+                </p> */}
+                 <p>
+                <strong>Address</strong>: {employeeObject.address} <button onClick={this.salaryEdit}>🖊</button>
                 </p>
                 <p>
-                Salary: {employeeObject.salary} <button onClick={this.salaryEdit}>🖊</button>
+                <strong>Salary</strong>: {employeeObject.salary} <button onClick={this.salaryEdit}>🖊</button>
                 </p>
                 <p>
-                Interval: {employeeObject.interval} <button onClick={this.intervalEdit}>🖊</button>
+                <strong>Payment Interval</strong>: {employeeObject.interval} <button onClick={this.intervalEdit}>🖊</button>
                 </p>           
                 <button onClick={this.props.removeEmployee}>Delete</button>
                 </div>

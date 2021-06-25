@@ -61,8 +61,11 @@ contract Payroll {
     //map co balances
     mapping (address => uint) public companyBalances;
     
+    //need an only owner 'withdraw' function and event
     event payrollFunded(uint indexed _id, address indexed _address, uint indexed _amount);
     event employeePaid(address indexed _address, uint indexed _amount, uint indexed _companyId);
+    // event employeeCreated(uint indexed _companyId, address indexed _address);
+    event employeeCreated(address indexed _address, uint indexed _companyId, uint indexed _salary, uint _interval);
     event companyCreated(address indexed _address, uint _id, string indexed _name);
 
     //Create, edit, delete employee functions
@@ -85,6 +88,8 @@ contract Payroll {
     function createEmployee(address payable _address, uint _salary, uint _interval, uint _companyId) public {
         require (companiesToOwner[_companyId] == msg.sender);
         employees[_address] = Employee(_address, _salary, _interval, _companyId);
+        emit employeeCreated(_address, _companyId, _salary, _interval);
+        // emit employeeInfo(_address, _salary, _interval);
     }
     
 
@@ -195,3 +200,4 @@ contract Payroll {
     }
 
 }
+
