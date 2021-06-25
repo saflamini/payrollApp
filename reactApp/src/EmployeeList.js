@@ -6,6 +6,7 @@ import { payrollAddress } from './config';
 import { payrollContract } from './config';
 import { v4 as uuidv4 } from 'uuid';
 import Web3 from 'web3';
+import "./EmployeeList.css";
 
 
 class EmployeeList extends Component {
@@ -13,9 +14,7 @@ class EmployeeList extends Component {
     constructor(props) {
         super(props);
         this.state ={
-            employees: [
-                {name: 'Sam Flamini', address: "", salary: 100000, interval: 26, id: uuidv4()}
-            ]
+            employees: [{name: 'sam'}]
         }
 
         this.addEmployee = this.addEmployee.bind(this);
@@ -31,10 +30,12 @@ class EmployeeList extends Component {
     addEmployee(employee, address) {
         let newEmployee = {...employee, id: uuidv4()}
         payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
+        .then(console.log)
         .then(
         this.setState(state => ({ 
             employees: [...state.employees, newEmployee]
         }))
+       
         )
     }
 
@@ -86,12 +87,31 @@ class EmployeeList extends Component {
         this.setState({employees: updatedEmployees})
     }
 
+    // renderEmployees() {
+    //     return (
+    //         this.state.employees.map(employee => (
+    //             <div key={employee.id}>{
+    //                 <Employee 
+    //                 name={employee.name}
+    //                 salary={employee.salary}
+    //                 interval={employee.interval} 
+    //                 id={employee.id}
+    //                 removeEmployee={() => this.remove(employee.id)}
+    //                 updateName={this.updateName}
+    //                 updateSalary={this.updateSalary}
+    //                 updateInterval={this.updateInterval}
+    //                 />}
+    //             </div>
+    //         ))
+    //     )
+    // }
     renderEmployees() {
         return (
-            this.state.employees.map(employee => (
-                <div key={employee.id}>{
+            this.props.roster.map(employee => (
+                <div key={employee.address + employee.companyId}>{
                     <Employee 
-                    name={employee.name}
+                    // name={employee.name}
+                    address={employee.address}
                     salary={employee.salary}
                     interval={employee.interval} 
                     id={employee.id}
@@ -107,16 +127,22 @@ class EmployeeList extends Component {
 
 
     render() {
+
       
         return (
-            <div>
-                <h1>Employee List</h1>
+            <div className="employeeList">
+                <div className="employeeRoster">
+                <h3>Employee Roster</h3>
+                {this.renderEmployees()}   
+                </div>
+               
+                <h4>Add a New Employee</h4>
                 <div>
                 <EmployeeForm key={'form'} addEmployee={this.addEmployee}/>
 
                 </div>
                 
-                {this.renderEmployees()}
+                
 
             </div>
         )

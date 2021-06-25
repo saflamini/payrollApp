@@ -2,10 +2,10 @@ import React, {Component} from 'react';
 import Web3 from 'web3';
 import { web3 } from './config';
 import { payrollContract } from './config';
-import detectEthereumProvider from '@metamask/detect-provider';
+// import detectEthereumProvider from '@metamask/detect-provider';
 import EmployeeList from './EmployeeList';
-import { Contract } from 'web3-eth-contract';
-import { payrollAddress } from './config';
+// import { Contract } from 'web3-eth-contract';
+// import { payrollAddress } from './config';
 import './Web3Setup.css';
 import ConnectWallet from './ConnectWallet';
 import CompanyInfo from "./CompanyInfo";
@@ -20,7 +20,8 @@ class Web3Setup extends Component {
             connected: false,
             account: "",
             company: "Please create a new company or connect a wallet",
-            companyId: null
+            companyId: null,
+            roster: []
         };
 
         this.setup = this.setup.bind(this);
@@ -28,6 +29,7 @@ class Web3Setup extends Component {
         this.disconnected = this.disconnected.bind(this);
         this.getCompany = this.getCompany.bind(this);
         this.getCompanyId = this.getCompanyId.bind(this);
+        this.getEmployees = this.getEmployees.bind(this);
 
     }
 
@@ -79,7 +81,6 @@ class Web3Setup extends Component {
                   connected: true, 
                   account: acct
                 })
-                console.log('here')
 
             console.log(this.state.account);
           }
@@ -114,10 +115,10 @@ class Web3Setup extends Component {
 
         if (currentAccount !== null) {
             this.setState({account: currentAccount})
-            console.log('here')
-
+            console.log('here');
             this.getCompany();
             this.getCompanyId();
+            this.getEmployees();
         }
 
         const accountList = await window.ethereum.request({ method: 'eth_accounts' })
@@ -153,13 +154,39 @@ class Web3Setup extends Component {
         this.setState({
             companyId: coId
         })       
-        console.log(this.state.companyId)
+        this.getEmployees();
+    }
+
+    async getEmployees() {
+        let employeeArray = await payrollContract.getPastEvents('employeeCreated', {filter: {_companyId: this.state.companyId}}, {fromBlock: "earliest"});
+        let employeeRoster = [];
+        for (let i = 0; i < employeeArray.length; i++) {
+            if(employeeArray[i].returnValues._companyId === this.state.companyId) {
+                employeeRoster.push({
+                    address: employeeArray[i].returnValues._address,
+                    salary: `${web3.utils.fromWei(employeeArray[i].returnValues._salary.toString(), 'ether')} eth`,
+                    interval: `Every ${employeeArray[i].returnValues._interval / 7} weeks`
+                })
+            }
+        }
+        console.log(employeeRoster);
+        this.setState({roster: employeeRoster});
+
+        // let employeeInformation = [];
+        // for (let i = 0; i < employeeRoster.length; i++) {
+        //     let employeeInfo = await payrollContract.getPastEvents('employeeInfo', {filter: {_address: employeeRoster[i]}}, {fromBlock: "earliest"})
+        //     employeeInformation.push(`Employee ${employeeRoster[i]} is being paid ${employeeInfo[i].returnValues._salary} wei with an interval of ${employeeInfo[i].returnValues._interval}`);
+        //     // console.log(employeeInformation.returnValues._interval);
+        // }
+        // console.log(employeeInformation)
+      
+        // let employeeInfo = payrollContract.events.employeeInfo({fromBlock: 0});
+        // console.log(employeeInfo)
     }
 
 
     render() {
 
-        
 
         
         return (
@@ -168,8 +195,8 @@ class Web3Setup extends Component {
                 <span className="connectWallet">{this.state.account}</span>
                 : <ConnectWallet />
                 }
-                <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany}/>
-                <EmployeeList companyId={this.state.companyId} companyAddress={this.state.account}/>
+                <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
+                <EmployeeList companyId={this.state.companyId} companyAddress={this.state.account} roster={this.state.roster}/>
                 
             </div>
         )

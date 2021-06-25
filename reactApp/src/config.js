@@ -2,7 +2,7 @@ import Web3 from 'web3';
 
 export const web3 = new Web3(window.ethereum.currenProvider || "http://localhost:7545")
 
-export const payrollAddress = "0xfba274d3Fb1325dC0b9b87DC09d7Ca33405a5553";
+export const payrollAddress = "0x2099CD4901c9CB0F25f67f61DDd4e8019A16f5Eb";
 
 export const payrollABI = [
   {
@@ -28,6 +28,37 @@ export const payrollABI = [
       }
     ],
     "name": "companyCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_companyId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_salary",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_interval",
+        "type": "uint256"
+      }
+    ],
+    "name": "employeeCreated",
     "type": "event"
   },
   {
