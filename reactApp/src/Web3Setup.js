@@ -4,6 +4,7 @@ import { web3 } from './config';
 import { payrollContract } from './config';
 // import detectEthereumProvider from '@metamask/detect-provider';
 import EmployeeList from './EmployeeList';
+import Balance from './Balance';
 // import { Contract } from 'web3-eth-contract';
 // import { payrollAddress } from './config';
 import './Web3Setup.css';
@@ -21,7 +22,8 @@ class Web3Setup extends Component {
             account: "",
             company: "Please create a new company or connect a wallet",
             companyId: null,
-            roster: []
+            roster: [], 
+            balance: ""
         };
 
         this.setup = this.setup.bind(this);
@@ -30,6 +32,7 @@ class Web3Setup extends Component {
         this.getCompany = this.getCompany.bind(this);
         this.getCompanyId = this.getCompanyId.bind(this);
         this.getEmployees = this.getEmployees.bind(this);
+        this.getCompanyBalance = this.getCompanyBalance.bind(this);
 
     }
 
@@ -155,6 +158,7 @@ class Web3Setup extends Component {
             companyId: coId
         })       
         this.getEmployees();
+        this.getCompanyBalance();
     }
 
     async getEmployees() {
@@ -184,9 +188,14 @@ class Web3Setup extends Component {
         // console.log(employeeInfo)
     }
 
+    async getCompanyBalance() {
+        console.log(this.state.account)
+        let bal = await payrollContract.methods.getCompanyBalance(this.state.account).call({from: this.state.account});
+        this.setState({balance: web3.utils.fromWei(bal.toString(), 'ether')});
+    }
+
 
     render() {
-
 
         
         return (
@@ -197,7 +206,7 @@ class Web3Setup extends Component {
                 }
                 <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
                 <EmployeeList companyId={this.state.companyId} companyAddress={this.state.account} roster={this.state.roster}/>
-                
+                <Balance address={this.state.account} companyId={this.state.companyId} balance={this.state.balance}/>
             </div>
         )
     }
