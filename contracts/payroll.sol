@@ -42,6 +42,7 @@ contract Payroll {
     struct Company {
         string name;
         uint _id;
+        address[] roster;
     }
 
     uint idGenerator = 0;
@@ -53,14 +54,16 @@ contract Payroll {
     
     //attempting to use this pattern instead
     //uint will be hash of co address and address
-    mapping (address => Employee) public employees;
+    mapping (bytes32 => Employee) public employees;
     //map address to co
     mapping (address => Company) public companies;
     //map co id to address
     mapping (uint => address) public companiesToOwner;
     //map co balances
     mapping (address => uint) public companyBalances;
+
     
+
     //need an only owner 'withdraw' function and event
     event payrollFunded(uint indexed _id, address indexed _address, uint indexed _amount);
     event employeePaid(address indexed _address, uint indexed _amount, uint indexed _companyId);
@@ -75,7 +78,7 @@ contract Payroll {
     function createCompany(string memory _name) public {
         uint coId = idGenerator;
         idGenerator++;
-        Company memory company = Company(_name, coId);
+        Company memory company = Company(_name, coId, new address[](0));
         companies[msg.sender] = company;
         companiesToOwner[companies[msg.sender]._id] = msg.sender;
         companyBalances[msg.sender] = 0;
@@ -85,26 +88,30 @@ contract Payroll {
    
     
     // function that will allow us to create a new employee using the employee struct
-    function createEmployee(address payable _address, uint _salary, uint _interval, uint _companyId) public {
-        require (companiesToOwner[_companyId] == msg.sender);
-        employees[_address] = Employee(_address, _salary, _interval, _companyId);
-        emit employeeCreated(_address, _companyId, _salary, _interval);
+    function createEmployee(address payable _address, uint _salary, uint _interval, uint _coId) public {
+        require (companiesToOwner[_coId] == msg.sender);
+        Employee memory newEmployee = Employee(_address, _salary, _interval, _coId);
+        bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+        employees[hashedEmployee] = newEmployee;
+        companies[msg.sender].roster.push(_address);
+        emit employeeCreated(_address, _coId, _salary, _interval);
         // emit employeeInfo(_address, _salary, _interval);
     }
     
-
-    // need ability to edit current employee info
-    // should probably split into two separate functions
-    function editEmployeeSalary(address _address, uint _salary) public {
-        require(companiesToOwner[employees[_address].companyId] == msg.sender);
-        employees[_address].salary = _salary;
+    //needs to be edited to account for recent changes w hashed employee and co Id requirements
+    function editEmployeeSalary(address _address, uint _coId, uint _salary) public {
+        bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+        require(companiesToOwner[employees[hashedEmployee].companyId] == msg.sender);
+        employees[hashedEmployee].salary = _salary;
         // require (_salary > 0);
         // require (employees[_address].flag = true);
     }
     
-    function editEmployeeInterval(address _address, uint _interval) public {
-        require(companiesToOwner[employees[_address].companyId] == msg.sender);
-        employees[_address].interval = _interval;
+    //needs same edits as employee sal edit
+    function editEmployeeInterval(address _address, uint _coId, uint _interval) public {
+        bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+        require(companiesToOwner[employees[hashedEmployee].companyId] == msg.sender);
+        employees[hashedEmployee].interval = _interval;
     }
 
     // function editEmployeeInterval(address _address, uint _interval) public {
@@ -112,23 +119,35 @@ contract Payroll {
     //     require (employees[_address].flag = true);
     //     employees[_address].interval = _interval;
     // }
-
-    function deleteEmployee(address _address) public {
-        require(companiesToOwner[employees[_address].companyId] == msg.sender);
-        delete employees[_address];
+    //check
+    function deleteEmployee(address _address, uint _coId) public {
+        bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+        require(companiesToOwner[employees[hashedEmployee].companyId] == msg.sender);
+        for (uint i; i < companies[msg.sender].roster.length; i++) {
+            if (companies[msg.sender].roster[i] == _address) {
+                delete companies[msg.sender].roster[i];
+            }
+        }
+        delete employees[hashedEmployee];
     }
     
     
     //getting data section
 
-    function getEmployeeInterval(address payable _address) public view returns (uint) {
+    function getEmployeeInterval(address payable _address, uint _coId) public view returns (uint) {
         // require (employees[_address].flag = true);
-        return employees[_address].interval;
+        require(_coId == companies[msg.sender]._id);
+        // require (employees[_address].companyId == companies[msg.sender]._id);
+        bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+        return employees[hashedEmployee].interval;
     }
      
-    function getEmployeeSalary(address _address) public view returns (uint) {
+    function getEmployeeSalary(address _address, uint _coId) public view returns (uint) {
         // require (employees[_address].flag = true);
-        return employees[_address].salary;
+        require(_coId == companies[msg.sender]._id);
+        // require (employees[_address].companyId == companies[msg.sender]._id);
+        bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+        return employees[hashedEmployee].salary;
     }
 
      function getCompany(address _address) public view returns (string memory) {
@@ -141,6 +160,26 @@ contract Payroll {
 
     function getCompanyBalance(address _address) public view returns (uint) {
         return companyBalances[_address];
+    }
+
+    // function getEmployeesByCompany(uint _coId) public view returns (address[] memory) {
+    //     address[] memory result = new address[](employeeList.length);
+    //     for (uint i; i < employeeList.length; i++) {
+    //         if (employeeList[i].companyId == _coId) {
+    //             result.push(employeeList[i].employeeAddress);
+    //         }
+    //     }
+
+    //     return result;
+    // }
+    
+    //holy shit, I think that this worked. Try it again in app, then use getemployeeSal and getEmployeeInterval to return up to date salaries and intervals, and render them on front end.
+    function getEmployeesByCompany(address _address) public view returns (address[] memory) {
+        address[] memory employeeRoster = new address[](companies[msg.sender].roster.length);
+        for (uint i; i < companies[_address].roster.length; i++) {
+            employeeRoster[i] = companies[_address].roster[i];
+        }
+        return employeeRoster;
     }
     
     // function getEmployeeBalance(address _address) public view returns (uint) {
@@ -180,24 +219,26 @@ contract Payroll {
     //need a way to work w decimals to create accurate payment amount
     //if we call this function, we pay the employee based on interval and salary
     //use a library for floating points
-    function payEmployee(address _address) public {
-    require(companiesToOwner[employees[_address].companyId] == msg.sender);
+    function payEmployee(address _address, uint _coId) public {
+    bytes32 hashedEmployee = keccak256(abi.encodePacked(_address, _coId));
+    require(companiesToOwner[employees[hashedEmployee].companyId] == msg.sender);
     //these payment intervals and amounts will be very important for our whole application.
     //technical challenges here - will want to support stablecoins eventuall
     //will also want to include decentralized price feeds that can convert $ to ETH easily
     //attempting to use library here - not working. For some reason the functions aren't working
         uint paymentInterval;
         //use library to create a payment interval to multiply by
-        paymentInterval = PRBMathUD60x18.div(employees[_address].interval, 365);
+        paymentInterval = PRBMathUD60x18.div(employees[hashedEmployee].interval, 365);
         uint payment;
         //use library to multiply by fraction
-        payment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
-        address payable payee = employees[_address].employeeAddress;
+        payment = PRBMathUD60x18.mul(employees[hashedEmployee].salary, paymentInterval);
+        address payable payee = employees[hashedEmployee].employeeAddress;
         companyBalances[msg.sender] -= payment;
         payee.transfer(payment);
         //add the payment amount to total earnings of the employee
-        emit employeePaid(_address, payment, employees[_address].companyId);
+        emit employeePaid(_address, payment, employees[hashedEmployee].companyId);
     }
 
 }
+
 

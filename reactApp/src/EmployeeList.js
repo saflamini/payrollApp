@@ -108,7 +108,7 @@ class EmployeeList extends Component {
     renderEmployees() {
         return (
             this.props.roster.map(employee => (
-                <div key={employee.address + employee.companyId}>{
+                <div key={employee.address + this.props.companyId}>{
                     <Employee 
                     // name={employee.name}
                     address={employee.address}
