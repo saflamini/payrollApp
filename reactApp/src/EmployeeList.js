@@ -7,6 +7,12 @@ import { payrollContract } from './config';
 import { v4 as uuidv4 } from 'uuid';
 import Web3 from 'web3';
 import "./EmployeeList.css";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Table from 'react-bootstrap/Table';
+import EditModal from './EditModal';
+
 
 
 class EmployeeList extends Component {
@@ -14,7 +20,9 @@ class EmployeeList extends Component {
     constructor(props) {
         super(props);
         this.state ={
-            employees: [{name: 'sam'}]
+            employees: [{name: 'sam'}],
+            editing: false,
+            employeeEditing: ""
         }
 
         this.addEmployee = this.addEmployee.bind(this);
@@ -22,7 +30,11 @@ class EmployeeList extends Component {
         this.remove = this.remove.bind(this);
         this.updateName = this.updateName.bind(this);
         this.updateSalary = this.updateSalary.bind(this);
-        this.updateInterval = this.updateInterval.bind(this)
+        this.updateInterval = this.updateInterval.bind(this);
+        this.payEmployee = this.payEmployee.bind(this);
+        this.removeEmployee = this.removeEmployee.bind(this);
+        this.handleEditing = this.handleEditing.bind(this);
+        this.getEditingEmployee = this.getEditingEmployee.bind(this);
     }
 
     //this creates an employee on the back end.
@@ -67,25 +79,59 @@ class EmployeeList extends Component {
         this.setState({employees: updatedEmployees})
     }
 
-    updateSalary(id, updatedSalary) {
-        let updatedEmployees = this.state.employees.map(employee => {
-            if(employee.id === id) {
-                return {...employee, salary: updatedSalary}
-            }
-            return employee;
-        })
-        this.setState({employees: updatedEmployees})
+    // updateSalary(id, updatedSalary) {
+    //     let updatedEmployees = this.state.employees.map(employee => {
+    //         if(employee.id === id) {
+    //             return {...employee, salary: updatedSalary}
+    //         }
+    //         return employee;
+    //     })
+    //     this.setState({employees: updatedEmployees})
+    // }
+
+    // updateInterval(id, updatedInterval) {
+    //     let updatedEmployees = this.state.employees.map(employee => {
+    //         if(employee.id === id) {
+    //             return {...employee, interval: updatedInterval}
+    //         }
+    //         return employee;
+    //     })
+    //     this.setState({employees: updatedEmployees})
+    // }  
+
+    async updateSalary(address, companyId, newSalary) {
+        console.log(address);
+        console.log(companyId);
+        console.log(newSalary);
+        await payrollContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.props.account})
+        .then(console.log)
+       
     }
 
-    updateInterval(id, updatedInterval) {
-        let updatedEmployees = this.state.employees.map(employee => {
-            if(employee.id === id) {
-                return {...employee, interval: updatedInterval}
-            }
-            return employee;
-        })
-        this.setState({employees: updatedEmployees})
+    async updateInterval(address, companyId, newInterval) {
+        await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.props.account})
+        .then(console.log)
     }
+
+    async payEmployee(address, companyId) {
+        await payrollContract.methods.payEmployee(address, companyId).send({from: this.props.account})
+        .then(console.log)
+    }
+
+    //need to remove deleted employee from display
+    async removeEmployee(address, companyId) {
+        await payrollContract.methods.deleteEmployee(address, companyId).send({from: this.props.account})
+        .then(console.log)
+        // this.setState(state => {
+        //     roster: state.roster.filter(employee => employee.address !== address)
+        // });
+    }
+
+    handleEditing(employeeId) {
+        this.setState({editing: true, employeeEditing: employeeId});
+    }
+
+   
 
     // renderEmployees() {
     //     return (
@@ -108,42 +154,85 @@ class EmployeeList extends Component {
     renderEmployees() {
         return (
             this.props.roster.map(employee => (
-                <div key={employee.address + this.props.companyId}>{
+                <tbody key={employee.address + this.props.companyId}>{
                     <Employee 
                     // name={employee.name}
                     address={employee.address}
+                    account={this.props.account}
                     salary={employee.salary}
                     interval={employee.interval} 
                     id={employee.id}
-                    removeEmployee={() => this.remove(employee.id)}
+                    companyId={this.props.companyId}
+                    removeEmployee={this.removeEmployee}
+                    payEmployee={this.payEmployee}
                     updateName={this.updateName}
                     updateSalary={this.updateSalary}
                     updateInterval={this.updateInterval}
+                    handleEditing={this.handleEditing}
                     />}
-                </div>
+                </tbody>
             ))
         )
     }
 
+    getEditingEmployee() {
+        let targetEmployee;
+        for(let i = 0; i < this.props.roster.length; i++) {
+            if (this.props.roster[i].address === this.props.editingAddress) {
+                targetEmployee = this.props.roster[i];
+                break;
+            }
+            console.log(targetEmployee)
+            return targetEmployee;
+        }
+    }
 
     render() {
 
-      
+        // if(this.state.editing) {
+        //     let e = this.getEditingEmployee();
+        //     console.log(e);
+        //     return (
+        //     <EditModal 
+        //     show={true} 
+        //     address={e.address} 
+        //     salary={e.salary} 
+        //     interval={e.interval}/>
+  
+        // )
+        // }
+  
+    
         return (
+
             <div className="employeeList">
-                <div className="employeeRoster">
-                <h3>Employee Roster</h3>
-                {this.renderEmployees()}   
-                </div>
-               
-                <h4>Add a New Employee</h4>
-                <div>
-                <EmployeeForm key={'form'} addEmployee={this.addEmployee}/>
+                <Container>
+                    <Row>
+                        <Col xs={10}>
+                        <h3>Employee Roster</h3>
+                        <Table responsive striped bordered hover variant="dark">
+                        <thead>
+                            <tr>
+                            <th>Address</th>
+                            <th>Salary</th>
+                            <th>Interval</th>
+                            <th>Pay</th>
+                            <th>Edit</th>
+                            </tr>
+                        </thead>
+                        {this.renderEmployees()}  
+                        </Table> 
+                   
+                        </Col>
 
-                </div>
-                
-                
-
+                        <Col>
+                        <div>
+                        <h4>Add a New Employee</h4>
+                        <EmployeeForm key={'form'} addEmployee={this.addEmployee}/>
+                        </div> 
+                        </Col>
+                    </Row>
+                </Container>
             </div>
         )
     }

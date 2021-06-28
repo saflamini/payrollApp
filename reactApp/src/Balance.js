@@ -30,7 +30,7 @@ class Balance extends Component {
         //haven't gotten conditional form to work here
         //could benefit from triggering a re-render after new funds are added
         return (
-            <div className="funding">
+            <div className="container" className="funding">
                 <h2>Your Balance</h2>
                 <h4>{this.props.balance} ether</h4>
                 {this.state.addingFunds ? <Fund funding={this.fundPayroll}/>

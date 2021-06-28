@@ -10,6 +10,11 @@ import Balance from './Balance';
 import './Web3Setup.css';
 import ConnectWallet from './ConnectWallet';
 import CompanyInfo from "./CompanyInfo";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col'
+
+
 
 class Web3Setup extends Component {
   
@@ -208,6 +213,9 @@ class Web3Setup extends Component {
                 salary: salary, 
                 interval: interval
             })}
+            this.setState({
+                roster: employeeRender
+            })
             console.log(employeeRender);
         }
 
@@ -225,9 +233,16 @@ class Web3Setup extends Component {
                 <span className="connectWallet">{this.state.account}</span>
                 : <ConnectWallet />
                 }
-                <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
-                <EmployeeList companyId={this.state.companyId} companyAddress={this.state.account} roster={this.state.roster}/>
-                <Balance address={this.state.account} companyId={this.state.companyId} balance={this.state.balance}/>
+                <Container>
+                    <Row>
+                        <Col>
+                        <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
+                        <Balance address={this.state.account} companyId={this.state.companyId} balance={this.state.balance}/>
+                        </Col>
+                    
+                    </Row>
+                </Container>
+                <EmployeeList account={this.state.account} companyId={this.state.companyId} companyAddress={this.state.account} roster={this.state.roster}/>
             </div>
         )
     }

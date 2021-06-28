@@ -1,4 +1,7 @@
 import React, {Component} from "react";
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+
 
 class Fund extends Component {
     constructor(props) {
@@ -27,11 +30,11 @@ class Fund extends Component {
         return (
             <div>
 
-            <form onSubmit={this.handleSubmit}>
+            <Form onSubmit={this.handleSubmit}>
                 <label htmlFor="funding">Add Funds: </label>
                 <input type="text" name="funding" placeholder="Add funds..." onChange={this.handleChange} value={this.state.funding}></input>
-                <button>Submit</button>
-            </form>
+                <Button type="submit" variant="primary" size="sm" >Submit</Button>
+            </Form>
             </div>
 
         )
