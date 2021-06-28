@@ -2,7 +2,7 @@ import Web3 from 'web3';
 
 export const web3 = new Web3(window.ethereum.currenProvider || "http://localhost:7545")
 
-export const payrollAddress = "0x2099CD4901c9CB0F25f67f61DDd4e8019A16f5Eb";
+export const payrollAddress = "0x1D87f5db0Ff93aCF399c77a1E1483e07E6F2bcAe";
 
 export const payrollABI = [
   {
@@ -179,9 +179,9 @@ export const payrollABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "bytes32",
         "name": "",
-        "type": "address"
+        "type": "bytes32"
       }
     ],
     "name": "employees",
@@ -243,7 +243,7 @@ export const payrollABI = [
       },
       {
         "internalType": "uint256",
-        "name": "_companyId",
+        "name": "_coId",
         "type": "uint256"
       }
     ],
@@ -258,6 +258,11 @@ export const payrollABI = [
         "internalType": "address",
         "name": "_address",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_coId",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -279,6 +284,11 @@ export const payrollABI = [
       },
       {
         "internalType": "uint256",
+        "name": "_coId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_interval",
         "type": "uint256"
       }
@@ -294,6 +304,11 @@ export const payrollABI = [
         "internalType": "address",
         "name": "_address",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_coId",
+        "type": "uint256"
       }
     ],
     "name": "deleteEmployee",
@@ -307,6 +322,11 @@ export const payrollABI = [
         "internalType": "address payable",
         "name": "_address",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_coId",
+        "type": "uint256"
       }
     ],
     "name": "getEmployeeInterval",
@@ -327,6 +347,11 @@ export const payrollABI = [
         "internalType": "address",
         "name": "_address",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_coId",
+        "type": "uint256"
       }
     ],
     "name": "getEmployeeSalary",
@@ -404,6 +429,26 @@ export const payrollABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "getEmployeesByCompany",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_id",
         "type": "uint256"
@@ -421,6 +466,11 @@ export const payrollABI = [
         "internalType": "address",
         "name": "_address",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_coId",
+        "type": "uint256"
       }
     ],
     "name": "payEmployee",

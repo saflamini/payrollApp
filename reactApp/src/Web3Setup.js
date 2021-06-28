@@ -33,6 +33,8 @@ class Web3Setup extends Component {
         this.getCompanyId = this.getCompanyId.bind(this);
         this.getEmployees = this.getEmployees.bind(this);
         this.getCompanyBalance = this.getCompanyBalance.bind(this);
+        this.getEmployeeArray = this.getEmployeeArray.bind(this);
+
 
     }
 
@@ -85,7 +87,7 @@ class Web3Setup extends Component {
                   account: acct
                 })
 
-            console.log(this.state.account);
+            // console.log(this.state.account);
           }
           
           let currentAccount = null;
@@ -157,8 +159,11 @@ class Web3Setup extends Component {
         this.setState({
             companyId: coId
         })       
-        this.getEmployees();
+        // this.getEmployees();
         this.getCompanyBalance();
+        this.getEmployeeArray();
+        // payrollContract.methods.getEmployeeSalary("0x00471Eaad87b91f49b5614D452bd0444499c1bd9", this.state.companyId).call({from: this.state.account}).then(console.log)
+
     }
 
     async getEmployees() {
@@ -166,8 +171,12 @@ class Web3Setup extends Component {
         let employeeRoster = [];
         for (let i = 0; i < employeeArray.length; i++) {
             if(employeeArray[i].returnValues._companyId === this.state.companyId) {
+                // let salary = await payrollContract.methods.getEmployeeSalary(employeeArray[i].returnValues._address).call({from: this.state.account});
+                // let interval = await payrollContract.methods.getEmployeeInterval(employeeArray[i].returnValues._address).call({from: this.state.account});
                 employeeRoster.push({
                     address: employeeArray[i].returnValues._address,
+                    // salary: `${web3.utils.fromWei(salary.toString(), 'ether')} eth`,
+                    // interval: `Every ${interval / 7} weeks`
                     salary: `${web3.utils.fromWei(employeeArray[i].returnValues._salary.toString(), 'ether')} eth`,
                     interval: `Every ${employeeArray[i].returnValues._interval / 7} weeks`
                 })
@@ -188,15 +197,27 @@ class Web3Setup extends Component {
         // console.log(employeeInfo)
     }
 
+    async getEmployeeArray() {
+        let employeeArray = await payrollContract.methods.getEmployeesByCompany(this.state.account).call({from: this.state.account});
+        let employeeRender = [];
+        for (let i = 0; i < employeeArray.length; i++) {
+            let salary = await payrollContract.methods.getEmployeeSalary(employeeArray[i], this.state.companyId).call({from: this.state.account});
+            let interval = await payrollContract.methods.getEmployeeInterval(employeeArray[i], this.state.companyId).call({from: this.state.account});
+            employeeRender.push({
+                address: employeeArray[i], 
+                salary: salary, 
+                interval: interval
+            })}
+            console.log(employeeRender);
+        }
+
     async getCompanyBalance() {
-        console.log(this.state.account)
         let bal = await payrollContract.methods.getCompanyBalance(this.state.account).call({from: this.state.account});
         this.setState({balance: web3.utils.fromWei(bal.toString(), 'ether')});
     }
 
 
     render() {
-
         
         return (
             <div>
