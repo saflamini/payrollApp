@@ -3,8 +3,11 @@ import Web3 from 'web3';
 import { web3 } from './config';
 import { payrollContract } from './config';
 // import detectEthereumProvider from '@metamask/detect-provider';
+import { v4 as uuidv4 } from 'uuid';
 import EmployeeList from './EmployeeList';
 import Balance from './Balance';
+import EditModal from './EditModal';
+import EmployeeForm from './EmployeeForm';
 // import { Contract } from 'web3-eth-contract';
 // import { payrollAddress } from './config';
 import './Web3Setup.css';
@@ -12,7 +15,9 @@ import ConnectWallet from './ConnectWallet';
 import CompanyInfo from "./CompanyInfo";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col'
+import Col from 'react-bootstrap/Col';
+import Card from 'react-bootstrap/Card';
+
 
 
 
@@ -28,7 +33,9 @@ class Web3Setup extends Component {
             company: "Please create a new company or connect a wallet",
             companyId: null,
             roster: [], 
-            balance: ""
+            balance: "",
+            editingEmployee: false,
+            editingAddress: ""
         };
 
         this.setup = this.setup.bind(this);
@@ -39,7 +46,14 @@ class Web3Setup extends Component {
         this.getEmployees = this.getEmployees.bind(this);
         this.getCompanyBalance = this.getCompanyBalance.bind(this);
         this.getEmployeeArray = this.getEmployeeArray.bind(this);
-
+        this.showEditModal = this.showEditModal.bind(this);
+        this.closeEditModal = this.closeEditModal.bind(this);
+        this.editingEmployee = this.editingEmployee.bind(this);
+        this.handleModalUpdate = this.handleModalUpdate.bind(this);
+        this.updateInterval = this.updateInterval.bind(this);
+        this.updateSalary = this.updateSalary.bind(this);
+        this.removeEmployee = this.removeEmployee.bind(this);
+        this.addEmployee = this.addEmployee.bind(this);
 
     }
 
@@ -208,11 +222,13 @@ class Web3Setup extends Component {
         for (let i = 0; i < employeeArray.length; i++) {
             let salary = await payrollContract.methods.getEmployeeSalary(employeeArray[i], this.state.companyId).call({from: this.state.account});
             let interval = await payrollContract.methods.getEmployeeInterval(employeeArray[i], this.state.companyId).call({from: this.state.account});
-            employeeRender.push({
+            if (employeeArray[i] !== "0x0000000000000000000000000000000000000000") {
+                employeeRender.push({
                 address: employeeArray[i], 
                 salary: salary, 
                 interval: interval
-            })}
+            })}}
+
             this.setState({
                 roster: employeeRender
             })
@@ -224,25 +240,142 @@ class Web3Setup extends Component {
         this.setState({balance: web3.utils.fromWei(bal.toString(), 'ether')});
     }
 
+    editingEmployee(employeeAddress) {
+        this.setState({editingEmployee: true, editingAddress: employeeAddress});
+        this.showEditModal(employeeAddress)
+    }
+
+    showEditModal(employeeAddress) {
+        let currentSalary;
+        let currentInterval;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address === employeeAddress) {
+                currentSalary = this.state.roster[i].salary;
+                currentInterval = this.state.roster[i].interval;
+                break;
+            }
+            
+        }
+        return (
+            <EditModal 
+            address={employeeAddress}
+            salary={currentSalary}
+            interval={currentInterval}
+            closeEditModal={this.closeEditModal}
+            handleModalUpdate={this.handleModalUpdate}
+            removeEmployee={this.removeEmployee}
+            />
+        )
+    }
+
+    handleModalUpdate(employeeObject) {
+        let addr = employeeObject.address;
+        let emp;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address === addr) {
+                emp = this.state.roster[i];
+                break;
+            }
+        }
+        if (employeeObject.salary !== emp.salary) {
+            this.updateSalary(employeeObject.address, this.state.companyId, employeeObject.salary)
+        }
+        if (employeeObject.interval !== emp.interval) {
+            this.updateInterval(employeeObject.address, this.state.companyId, employeeObject.interval)
+        }
+        else {
+            console.log('no changes made');
+        }
+        this.setState({editingEmployee: false})
+    }
+
+    async updateInterval(address, companyId, newInterval) {
+        await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.state.account})
+        .then(console.log)
+    }
+
+    async updateSalary(address, companyId, newSalary) {
+        console.log(address);
+        console.log(companyId);
+        console.log(newSalary);
+        await payrollContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.state.account})
+        .then(console.log)
+       
+    }
+
+    addEmployee(employee, address) {
+        let newEmployee = {...employee, id: uuidv4()}
+        payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.state.companyId).send({from: this.state.account, gas: 6721975})
+        .then(console.log)
+        // .then(
+        // this.setState(state => ({ 
+        //     employees: [...state.employees, newEmployee]
+        // }))
+       
+        // )
+    }
+
+    async removeEmployee(address) {
+        await payrollContract.methods.deleteEmployee(address, this.state.companyId).send({from: this.state.account})
+        .then(console.log)
+        //error handling might be nice here
+        this.setState({editingEmployee: false});
+        // this.setState(state => {
+        //     roster: state.roster.filter(employee => employee.address !== address)
+        // });
+    }
+
+    closeEditModal() {
+        console.log('closing')
+        this.setState({editingEmployee: false, editingAddress: ""});
+    }
+
+
 
     render() {
+
         
         return (
             <div>
+            <Container>
                 {this.state.connected? 
-                <span className="connectWallet">{this.state.account}</span>
+                <Card bg="success" className="connectWallet">{this.state.account}</Card>
                 : <ConnectWallet />
                 }
-                <Container>
+            </Container>
+            
+                <Container className="top">
                     <Row>
+                        
                         <Col>
+                        <Container bg="dark">
                         <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
                         <Balance address={this.state.account} companyId={this.state.companyId} balance={this.state.balance}/>
+                        </Container>
                         </Col>
-                    
+                        <Col>
+                        <Card  className="employeeForm" bg="dark">
+                        <Card.Header><h3>Add a New Employee</h3></Card.Header>
+                            <EmployeeForm 
+                            addEmployee={this.addEmployee}/>
+                        </Card>
+                        </Col>
                     </Row>
                 </Container>
-                <EmployeeList account={this.state.account} companyId={this.state.companyId} companyAddress={this.state.account} roster={this.state.roster}/>
+                <Container>
+                {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
+                <EmployeeList className="employeeList"
+                account={this.state.account} 
+                companyId={this.state.companyId} 
+                companyAddress={this.state.account} 
+                roster={this.state.roster}
+                // showEditModal={this.showEditModal}
+                // closeEditModal={this.closeEditModal}
+                editingEmployee={this.editingEmployee} 
+                />
+                
+                </Container>
+
             </div>
         )
     }

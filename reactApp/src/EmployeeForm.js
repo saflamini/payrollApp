@@ -25,19 +25,22 @@ class EmployeeForm extends Component {
 
     handleSubmit(evt) {
         evt.preventDefault();
+        console.log('working')
         this.props.addEmployee(this.state);
         this.setState({name: '', address: '', salary: '', interval: ''})
     }
 
     render() {
+
+
         return (
 
         <Container>
-            <Form onSubmit={this.handleSubmit}>
-                <Form.Group className="mb-3">
+            <Form>
+                {/* <Form.Group className="mb-3">
                     <Form.Label htmlFor="name">Name </Form.Label>
                     <Form.Control type="text" name="name" value={this.state.name} onChange={this.handleChange}></Form.Control>
-                </Form.Group>
+                </Form.Group>  */}
 
                 <Form.Group className="mb-3">
                     <Form.Label htmlFor="address">Ethereum Address </Form.Label>
@@ -53,7 +56,7 @@ class EmployeeForm extends Component {
                     <Form.Label htmlFor="interval">Interval </Form.Label>
                     <Form.Control type="text" name="interval" value={this.state.interval} onChange={this.handleChange}></Form.Control>
                 </Form.Group>
-                <Button>Create Employee</Button>
+                <Button variant="success" onClick={this.handleSubmit}>Create Employee</Button>
             </Form>
         </Container>
     )}

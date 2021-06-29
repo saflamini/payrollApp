@@ -1,5 +1,9 @@
-.funding {
-    margin-bottom: 5%;
-    border: 2px gray solid;
-    padding: 1%
+.addFunds {
+    margin-top: 5%;
+    padding: 3%;
+}
+
+.balance {
+    margin-top: 5%;
+    padding: 3%;
 }

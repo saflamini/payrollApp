@@ -1,4 +1,9 @@
 import React, {Component} from 'react';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
+import Button from 'react-bootstrap/Button';
+
 
 class CompanyForm extends Component {
     constructor(props) {
@@ -25,14 +30,16 @@ class CompanyForm extends Component {
 
     render() {
         return (
-            <div>
+            <Container>
                 <h3>Create Company</h3>
-                <form onSubmit={this.handleSubmit}>
-                    <label htmlFor="companyName">Company Name: </label>
-                    <input name="companyName" type="text" value={this.state.companyName} onChange={this.handleChange}></input>
-                    <button>Create Company</button>
-                </form>
-            </div>
+                <Form >
+                    <Form.Label htmlFor="companyName">Company Name: </Form.Label>
+                    <InputGroup>
+                    <Form.Control name="companyName" type="text" value={this.state.companyName} onChange={this.handleChange}></Form.Control>
+                    <Button onClick={this.handleSubmit}variant="success" >Create Company</Button>
+                    </InputGroup>
+                </Form>
+            </Container>
         )
     }
 }

@@ -10,12 +10,26 @@ class EditModal extends Component {
 constructor(props) {
     super(props);
     this.state = {
+        employeeObject: {
+            address: this.props.address,
+            salary: this.props.salary,
+            interval: this.props.interval
+        },
         salary: "",
         interval: "",
         salaryEditing: false,
         intervalEditing: false
     }
     this.handleChange = this.handleChange.bind(this);
+    this.handleSalaryUpdate = this.handleSalaryUpdate.bind(this);
+    this.handleIntervalUpdate = this.handleIntervalUpdate.bind(this);
+    this.handleDeleteEmployee = this.handleDeleteEmployee.bind(this);
+    this.salaryEdit = this.salaryEdit.bind(this);
+    this.intervalEdit = this.intervalEdit.bind(this);
+    this.updateEmployeeObject = this.updateEmployeeObject.bind(this);
+    this.updateSal = this.updateSal.bind(this);
+    this.updateInt = this.updateInt.bind(this);
+    this.sendUpdate = this.sendUpdate.bind(this);
 }
 
 handleChange(evt) {
@@ -24,15 +38,81 @@ handleChange(evt) {
     })
 }
 
+handleSalaryUpdate(evt) {
+    evt.preventDefault();
+    this.props.updateSalary(this.props.address, this.props.companyId, this.state.salary);
+    this.setState({salaryEditing: false})
+}
 
-render() {
+handleIntervalUpdate(evt) {
+    evt.preventDefault();
+    this.props.updateInterval(this.props.address, this.props.companyId, this.state.interval);
+    this.setState({intervalEditing: false})
+}
 
-    const employeeObject = {
-        // name: this.props.name,
+handleDeleteEmployee(evt) {
+    evt.preventDefault();
+    this.props.removeEmployee(this.props.address);
+}
+
+salaryEdit() {
+    this.setState({salaryEditing: !this.state.salaryEditing})
+}
+
+intervalEdit() {
+    this.setState({intervalEditing: !this.state.intervalEditing})
+}
+
+salaryEdited() {
+    this.state.employeeObject.salary = this.state.salary;
+    this.setState({salaryEditing: !this.state.salaryEditing})
+
+}
+
+intervalEdited() {
+    this.state.employeeObject.interval = this.state.interval;
+    this.setState({intervalEditing: !this.state.intervalEditing})
+
+}
+
+updateEmployeeObject() {
+    this.setState({
         address: this.props.address,
         salary: this.props.salary,
         interval: this.props.interval
-    }
+    })
+}
+
+sendUpdate() {
+    this.props.handleModalUpdate(this.state.employeeObject);
+}
+
+updateSal() {
+    this.setState({
+        employeeObject: {
+            address: this.props.address,
+            salary: this.state.salary,
+            interval: this.props.interval
+        },
+        salaryEditing: false
+    })
+}
+
+updateInt() {
+    this.setState({
+        employeeObject: {
+            address: this.props.address,
+            salary: this.props.salary,
+            interval: this.state.interval
+        },
+        intervalEditing: false
+    })
+}
+
+
+render() {
+
+
 
 
 if (this.state.salaryEditing) {
@@ -40,38 +120,38 @@ if (this.state.salaryEditing) {
     salaryDisplay = (
 
         <Container>
-            <Modal show={this.props.show}>
-                <Modal.Header closeButton>
+            <Modal show={true}>
+                <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                 
-                    <div>
+                    {/* <div>
                         <form onSubmit={this.handleSalaryUpdate}>
                             <label htmlFor="salary">Salary </label>
                             <input type="text" name="salary" value={this.state.salary} onChange={this.handleChange}></input> 
                             <button>✅</button>
                         </form>
-                    </div>
-                <Form>
+                    </div> */}
+                <Form >
                 <Form.Group className="mb-3">
                     <Form.Label htmlFor="salaryEdit">Edit Salary </Form.Label>
-                    <Form.Control type="text" name="salaryEdit" value={this.state.salaryEdit} onChange={this.handleChange}></Form.Control>
+                    <Form.Control type="text" name="salary" value={this.state.salary} onChange={this.handleChange}></Form.Control>
                 </Form.Group>
-
-                <Form.Group className="mb-3">
+                <Button variant="success" onClick={this.updateSal}>Done</Button>
+                {/* <Form.Group className="mb-3">
                     <Form.Label htmlFor="intervalEdit">Edit Interval </Form.Label>
                     <Form.Control type="text" name="intervalEdit" value={this.state.intervalEdit} onChange={this.handleChange}></Form.Control>
-                </Form.Group>
+                </Form.Group> */}
             </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={console.log('closed button click')}>
+          <Button variant="secondary" onClick={this.props.closeEditModal}>
             Close
           </Button>
-          <Button variant="primary">
+          {/* <Button variant="primary">
             Save Changes
-          </Button>
+          </Button> */}
         </Modal.Footer>
       </Modal>
       </Container>
@@ -84,38 +164,39 @@ if (this.state.intervalEditing) {
     intervalDisplay = (
 
         <Container>
-            <Modal show={this.props.show}>
-                <Modal.Header closeButton>
+            <Modal show={true}>
+                <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                 
-                    <div>
+                    {/* <div>
                         <form onSubmit={this.handleIntervalUpdate}>
                             <label htmlFor="interval">Interval </label>
                             <input type="text" name="interval" value={this.state.interval} onChange={this.handleChange}></input> 
                             <button>✅</button>
                         </form>
-                    </div>
-                <Form>
-                <Form.Group className="mb-3">
+                    </div> */}
+                <Form >
+                {/* <Form.Group className="mb-3">
                     <Form.Label htmlFor="salaryEdit">Edit Salary </Form.Label>
                     <Form.Control type="text" name="salaryEdit" value={this.state.salaryEdit} onChange={this.handleChange}></Form.Control>
-                </Form.Group>
+                </Form.Group> */}
 
                 <Form.Group className="mb-3">
                     <Form.Label htmlFor="intervalEdit">Edit Interval </Form.Label>
-                    <Form.Control type="text" name="intervalEdit" value={this.state.intervalEdit} onChange={this.handleChange}></Form.Control>
+                    <Form.Control type="text" name="interval" value={this.state.interval} onChange={this.handleChange}></Form.Control>
                 </Form.Group>
+                <Button variant="success" onClick={this.updateInt}>Done</Button>
             </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={console.log('closed button click')}>
+          <Button variant="secondary" onClick={this.props.closeEditModal}>
             Close
           </Button>
-          <Button variant="primary">
+          {/* <Button variant="primary">
             Save Changes
-          </Button>
+          </Button> */}
         </Modal.Footer>
       </Modal>
       </Container>
@@ -125,27 +206,27 @@ if (this.state.intervalEditing) {
 else {
     return (
     <Container>
-         <Modal show={this.props.show}>
-                <Modal.Header closeButton>
+         <Modal show={true}>
+                <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
         <p>
-            <strong>Address</strong>: {employeeObject.address} <button onClick={this.salaryEdit}>🖊</button> 
+            <strong>Address</strong>: {this.state.employeeObject.address}
         </p>
         <p>
-            <strong>Salary</strong>: {employeeObject.salary} <button onClick={this.salaryEdit}>🖊</button>
+            <strong>Salary</strong>: {this.state.employeeObject.salary} <Button size="sm" variant="secondary" onClick={this.salaryEdit}>Edit</Button>
         </p>
         <p>
-            <strong>Payment Interval</strong>: {employeeObject.interval} <button onClick={this.intervalEdit}>🖊</button>
+            <strong>Payment Interval</strong>: {this.state.employeeObject.interval} <Button size="sm" variant="secondary" onClick={this.intervalEdit}>Edit</Button>
         </p>         
-        <button onClick={this.handleDeleteEmployee}>Delete</button>
+        <Button size="sm" variant="danger" onClick={this.handleDeleteEmployee}>Delete</Button>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={console.log('closed button click')}>
+          <Button variant="secondary" onClick={this.props.closeEditModal}>
             Close
           </Button>
-          <Button variant="primary">
+          <Button onClick={this.sendUpdate} variant="success">
             Save Changes
           </Button>
         </Modal.Footer>

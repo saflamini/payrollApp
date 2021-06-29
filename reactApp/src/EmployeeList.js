@@ -22,7 +22,8 @@ class EmployeeList extends Component {
         this.state ={
             employees: [{name: 'sam'}],
             editing: false,
-            employeeEditing: ""
+            showEdit: false,
+            showCreate: false
         }
 
         this.addEmployee = this.addEmployee.bind(this);
@@ -100,6 +101,7 @@ class EmployeeList extends Component {
     // }  
 
     async updateSalary(address, companyId, newSalary) {
+        this.props.handleModalUpdate()
         console.log(address);
         console.log(companyId);
         console.log(newSalary);
@@ -109,6 +111,7 @@ class EmployeeList extends Component {
     }
 
     async updateInterval(address, companyId, newInterval) {
+        this.props.handleModalUpdate()
         await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.props.account})
         .then(console.log)
     }
@@ -127,8 +130,12 @@ class EmployeeList extends Component {
         // });
     }
 
-    handleEditing(employeeId) {
-        this.setState({editing: true, employeeEditing: employeeId});
+    showEdit(employeeId) {
+        this.setState({editing: true, editingEmployee: employeeId});
+    }
+
+    handleEditing(employeeAddress) {
+        this.props.editingEmployee(employeeAddress);
     }
 
    
@@ -208,7 +215,7 @@ class EmployeeList extends Component {
             <div className="employeeList">
                 <Container>
                     <Row>
-                        <Col xs={10}>
+                        {/* <Col xs={10}> */}
                         <h3>Employee Roster</h3>
                         <Table responsive striped bordered hover variant="dark">
                         <thead>
@@ -223,14 +230,14 @@ class EmployeeList extends Component {
                         {this.renderEmployees()}  
                         </Table> 
                    
-                        </Col>
+                        {/* </Col> */}
 
-                        <Col>
+                        {/* <Col>
                         <div>
                         <h4>Add a New Employee</h4>
                         <EmployeeForm key={'form'} addEmployee={this.addEmployee}/>
                         </div> 
-                        </Col>
+                        </Col> */}
                     </Row>
                 </Container>
             </div>
