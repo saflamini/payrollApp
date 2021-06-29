@@ -1,4 +1,9 @@
 import React, {Component} from "react";
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
+
+
 
 class Fund extends Component {
     constructor(props) {
@@ -27,11 +32,13 @@ class Fund extends Component {
         return (
             <div>
 
-            <form onSubmit={this.handleSubmit}>
-                <label htmlFor="funding">Add Funds: </label>
-                <input type="text" name="funding" placeholder="Add funds..." onChange={this.handleChange} value={this.state.funding}></input>
-                <button>Submit</button>
-            </form>
+            <Form onSubmit={this.handleSubmit}>
+                <Form.Label htmlFor="funding">Add Funds: </Form.Label>
+                <InputGroup>
+                <Form.Control type="text" name="funding" placeholder="Enter a number in wei..." onChange={this.handleChange} value={this.state.funding}></Form.Control>
+                <Button type="submit" variant="success" size="sm" >Submit</Button>
+                </InputGroup>
+            </Form>
             </div>
 
         )

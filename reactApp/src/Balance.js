@@ -2,6 +2,10 @@ import React, {Component} from 'react';
 import Fund from "./Fund";
 import "./Balance.css";
 import { payrollContract } from './config';
+import Card from 'react-bootstrap/esm/Card';
+import Container from 'react-bootstrap/esm/Container';
+import Button from 'react-bootstrap/esm/Button';
+
 
 class Balance extends Component {
     constructor(props) {
@@ -30,13 +34,18 @@ class Balance extends Component {
         //haven't gotten conditional form to work here
         //could benefit from triggering a re-render after new funds are added
         return (
-            <div className="funding">
+            <Container>
+                <Card bg="dark" className="balance">
                 <h2>Your Balance</h2>
-                <h4>{this.props.balance} ether</h4>
+                <h5>{`${Number(this.props.balance).toFixed(3)} ether`}</h5>
+                </Card>
+                <Card bg="dark" className="addFunds">
+                <h3>Add Additional Funding</h3>
                 {this.state.addingFunds ? <Fund funding={this.fundPayroll}/>
-                :<button onClick={this.handleClick}>Add Funding</button>
+                :<Button size="sm" variant="success" onClick={this.handleClick}>Add Funding</Button>
                 }
-            </div>
+                </Card>
+            </Container>
         )
     }
 }

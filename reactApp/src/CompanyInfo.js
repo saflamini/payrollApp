@@ -40,7 +40,7 @@ class CompanyInfo extends Component {
             <div>
                 {this.props.company === "Please create a new company or connect a wallet"?
                 <CompanyForm 
-                createCompany={this.createCompany}
+                createCompany={this.createCompany} 
                 />:<h1>{this.props.company}</h1>
                 }
                 {/* <h3>Company Address: {this.props.account}</h3> */}

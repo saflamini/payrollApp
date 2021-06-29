@@ -2,10 +2,26 @@
     position:absolute;
     top:0;
     right:0;
-    border: 2px color blue;
-    background-color: black;
-    color: white;
+    color:#FFFFFF;
     padding: 5px;
-    border-radius: 1%;
+    border-radius: 3%;
     margin: .25%;
+}
+
+body {
+    background-color: #121212;
+}
+
+.top {
+    margin-top: 5%;
+    color: #FFFFFF;
+}
+
+.employeeList {
+    color: #FFFFFF;
+    margin-top: 2%;
+}
+
+.employeeForm {
+    padding: 2%;
 }

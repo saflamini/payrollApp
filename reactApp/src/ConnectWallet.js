@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import { web3 } from './config';
 import detectEthereumProvider from '@metamask/detect-provider';
-
+import Button from 'react-bootstrap/Button';
 
 
 class ConnectWallet extends Component {
@@ -22,7 +22,7 @@ class ConnectWallet extends Component {
 
     render() {
         return (
-            <button onClick={this.enableWallet} className="connectWallet">Connect Wallet</button>
+            <Button variant="success" onClick={this.enableWallet} className="connectWallet">Connect Wallet</Button>
         )
     }
 }
