@@ -1,6 +1,5 @@
 import './App.css';
 import Web3Setup from './Web3Setup';
-import CompanyForm from "./CompanyForm";
 
 
 function App() {

@@ -1,6 +1,5 @@
 import React, {Component} from "react";
-import { web3 } from './config';
-import detectEthereumProvider from '@metamask/detect-provider';
+// import detectEthereumProvider from '@metamask/detect-provider';
 import Button from 'react-bootstrap/Button';
 
 

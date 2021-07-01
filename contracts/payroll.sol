@@ -70,6 +70,7 @@ contract Payroll {
     // event employeeCreated(uint indexed _companyId, address indexed _address);
     event employeeCreated(address indexed _address, uint indexed _companyId, uint indexed _salary, uint _interval);
     event companyCreated(address indexed _address, uint _id, string indexed _name);
+    event companyWithdrawal(address indexed _address, uint _id, uint _amount);
 
     //Create, edit, delete employee functions
 
@@ -212,6 +213,13 @@ contract Payroll {
         require(companiesToOwner[_id] == msg.sender);
         companyBalances[msg.sender] += msg.value;
         emit payrollFunded(_id, msg.sender, msg.value);
+    }
+
+    function withdrawFunds(uint _amount, uint _id) public {
+        require(companiesToOwner[_id] == msg.sender);
+        companyBalances[msg.sender] -= _amount;
+        payable(msg.sender).transfer(_amount);
+        emit companyWithdrawal(msg.sender, companies[msg.sender]._id, _amount);
     }
     
     

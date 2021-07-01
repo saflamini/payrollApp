@@ -1,5 +1,6 @@
 import React, {Component} from 'react'; 
 import Fund from "./Fund";
+import Withdraw from './Withdraw';
 import "./Balance.css";
 import { payrollContract } from './config';
 import Card from 'react-bootstrap/esm/Card';
@@ -15,6 +16,7 @@ class Balance extends Component {
         }
         this.handleClick = this.handleClick.bind(this);
         this.fundPayroll = this.fundPayroll.bind(this);
+        this.withdraw = this.withdraw.bind(this);
     }
 
 
@@ -22,9 +24,19 @@ class Balance extends Component {
         this.setState({addingFunds: true});
     }
 
+    // fundPayroll(amount) {
+    //     payrollContract.methods.fundPayroll(this.props.companyId).send({from: this.props.address, value: amount})
+    //     .then(console.log);
+    // }
+
     fundPayroll(amount) {
-        payrollContract.methods.fundPayroll(this.props.companyId).send({from: this.props.address, value: amount})
-        .then(console.log);
+        this.props.fundPayroll(amount)
+        // payrollContract.methods.fundPayroll(this.props.companyId).send({from: this.props.address, value: amount})
+        // .then(console.log);
+    }
+
+    withdraw(amount) {
+        this.props.withdraw(amount)
     }
 
    
@@ -40,10 +52,12 @@ class Balance extends Component {
                 <h5>{`${Number(this.props.balance).toFixed(3)} ether`}</h5>
                 </Card>
                 <Card bg="dark" className="addFunds">
-                <h3>Add Additional Funding</h3>
                 {this.state.addingFunds ? <Fund funding={this.fundPayroll}/>
                 :<Button size="sm" variant="success" onClick={this.handleClick}>Add Funding</Button>
                 }
+                </Card>
+                <Card bg="dark" className="withdrawFunds">
+                    <Withdraw withdraw={this.withdraw}/>
                 </Card>
             </Container>
         )

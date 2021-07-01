@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
-import Web3 from 'web3';
 import { web3 } from './config';
 import { payrollContract } from './config';
 // import detectEthereumProvider from '@metamask/detect-provider';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 import EmployeeList from './EmployeeList';
 import Balance from './Balance';
 import EditModal from './EditModal';
@@ -42,8 +41,7 @@ class Web3Setup extends Component {
         this.isConnected = this.isConnected.bind(this);
         this.disconnected = this.disconnected.bind(this);
         this.getCompany = this.getCompany.bind(this);
-        this.getCompanyId = this.getCompanyId.bind(this);
-        this.getEmployees = this.getEmployees.bind(this);
+        this.getCompanyInfo = this.getCompanyInfo.bind(this);
         this.getCompanyBalance = this.getCompanyBalance.bind(this);
         this.getEmployeeArray = this.getEmployeeArray.bind(this);
         this.showEditModal = this.showEditModal.bind(this);
@@ -54,7 +52,9 @@ class Web3Setup extends Component {
         this.updateSalary = this.updateSalary.bind(this);
         this.removeEmployee = this.removeEmployee.bind(this);
         this.addEmployee = this.addEmployee.bind(this);
-
+        this.fundPayroll = this.fundPayroll.bind(this);
+        this.payEmployee = this.payEmployee.bind(this);
+        this.withdrawFunds = this.withdrawFunds.bind(this);
     }
 
 
@@ -73,7 +73,7 @@ class Web3Setup extends Component {
             this.setState({account: accts[0]})
             this.setState({connected: true})
             this.getCompany();
-            this.getCompanyId();
+            this.getCompanyInfo();
         }
     }
 
@@ -85,7 +85,6 @@ class Web3Setup extends Component {
     async setup() {
 
         // This function detects most providers injected at window.ethereum
-  
         // const provider = await detectEthereumProvider();
       
         if (typeof window.ethereum !== 'undefined') {
@@ -97,7 +96,6 @@ class Web3Setup extends Component {
             console.log('you should consider metamask!')
           }
 
-
           const acct = await window.ethereum.request({ method: 'eth_accounts' })
           
           if (acct.length > 0) {
@@ -105,8 +103,6 @@ class Web3Setup extends Component {
                   connected: true, 
                   account: acct
                 })
-
-            // console.log(this.state.account);
           }
           
           let currentAccount = null;
@@ -141,8 +137,7 @@ class Web3Setup extends Component {
             this.setState({account: currentAccount})
             console.log('here');
             this.getCompany();
-            this.getCompanyId();
-            this.getEmployees();
+            this.getCompanyInfo();
         }
 
         const accountList = await window.ethereum.request({ method: 'eth_accounts' })
@@ -152,7 +147,7 @@ class Web3Setup extends Component {
             //if we have a connected metamask account, run getCompany and get companyId
             //these two functions also run if a reload occurs
             this.getCompany()
-            this.getCompanyId();
+            this.getCompanyInfo();
         }
 
     }
@@ -171,50 +166,18 @@ class Web3Setup extends Component {
     }
 
     //gets company ID for employee creation handling
-    async getCompanyId() {
+    async getCompanyInfo() {
         let coId = await payrollContract.methods.getCompanyId(this.state.account).call({from: this.state.account});
         let co = await payrollContract.methods.getCompany(this.state.account).call({from: this.state.account})
         if (co !== "")
         this.setState({
             companyId: coId
-        })       
-        // this.getEmployees();
+        })      
+        this.getEmployeeArray(); 
         this.getCompanyBalance();
-        this.getEmployeeArray();
-        // payrollContract.methods.getEmployeeSalary("0x00471Eaad87b91f49b5614D452bd0444499c1bd9", this.state.companyId).call({from: this.state.account}).then(console.log)
-
     }
 
-    async getEmployees() {
-        let employeeArray = await payrollContract.getPastEvents('employeeCreated', {filter: {_companyId: this.state.companyId}}, {fromBlock: "earliest"});
-        let employeeRoster = [];
-        for (let i = 0; i < employeeArray.length; i++) {
-            if(employeeArray[i].returnValues._companyId === this.state.companyId) {
-                // let salary = await payrollContract.methods.getEmployeeSalary(employeeArray[i].returnValues._address).call({from: this.state.account});
-                // let interval = await payrollContract.methods.getEmployeeInterval(employeeArray[i].returnValues._address).call({from: this.state.account});
-                employeeRoster.push({
-                    address: employeeArray[i].returnValues._address,
-                    // salary: `${web3.utils.fromWei(salary.toString(), 'ether')} eth`,
-                    // interval: `Every ${interval / 7} weeks`
-                    salary: `${web3.utils.fromWei(employeeArray[i].returnValues._salary.toString(), 'ether')} eth`,
-                    interval: `Every ${employeeArray[i].returnValues._interval / 7} weeks`
-                })
-            }
-        }
-        console.log(employeeRoster);
-        this.setState({roster: employeeRoster});
-
-        // let employeeInformation = [];
-        // for (let i = 0; i < employeeRoster.length; i++) {
-        //     let employeeInfo = await payrollContract.getPastEvents('employeeInfo', {filter: {_address: employeeRoster[i]}}, {fromBlock: "earliest"})
-        //     employeeInformation.push(`Employee ${employeeRoster[i]} is being paid ${employeeInfo[i].returnValues._salary} wei with an interval of ${employeeInfo[i].returnValues._interval}`);
-        //     // console.log(employeeInformation.returnValues._interval);
-        // }
-        // console.log(employeeInformation)
-      
-        // let employeeInfo = payrollContract.events.employeeInfo({fromBlock: 0});
-        // console.log(employeeInfo)
-    }
+  
 
     async getEmployeeArray() {
         let employeeArray = await payrollContract.methods.getEmployeesByCompany(this.state.account).call({from: this.state.account});
@@ -232,7 +195,6 @@ class Web3Setup extends Component {
             this.setState({
                 roster: employeeRender
             })
-            console.log(employeeRender);
         }
 
     async getCompanyBalance() {
@@ -292,41 +254,50 @@ class Web3Setup extends Component {
     async updateInterval(address, companyId, newInterval) {
         await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.state.account})
         .then(console.log)
+        .then(this.getEmployeeArray())
     }
 
     async updateSalary(address, companyId, newSalary) {
-        console.log(address);
-        console.log(companyId);
-        console.log(newSalary);
         await payrollContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.state.account})
         .then(console.log)
+        .then(this.getEmployeeArray())
        
     }
 
-    addEmployee(employee, address) {
-        let newEmployee = {...employee, id: uuidv4()}
-        payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.state.companyId).send({from: this.state.account, gas: 6721975})
+    async addEmployee(employee) {
+        // let newEmployee = {...employee, id: uuidv4()}
+        await payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.state.companyId).send({from: this.state.account, gas: 6721975})
         .then(console.log)
-        // .then(
-        // this.setState(state => ({ 
-        //     employees: [...state.employees, newEmployee]
-        // }))
-       
-        // )
+        .then(this.getCompanyInfo())
+
     }
 
     async removeEmployee(address) {
-        await payrollContract.methods.deleteEmployee(address, this.state.companyId).send({from: this.state.account})
+        await payrollContract.methods.deleteEmployee(address, this.state.companyId).send({from: this.state.account, gas: 6721975})
         .then(console.log)
-        //error handling might be nice here
-        this.setState({editingEmployee: false});
-        // this.setState(state => {
-        //     roster: state.roster.filter(employee => employee.address !== address)
-        // });
+        .then(this.setState({editingEmployee: false}))
+        .then(this.getCompanyInfo())
+    }
+
+    async fundPayroll(amount) {
+        await payrollContract.methods.fundPayroll(this.state.companyId).send({from: this.state.account, value: amount})
+        .then(console.log)
+        .then(this.getCompanyInfo());
+    }
+
+    async withdrawFunds(amount) {
+        await payrollContract.methods.withdrawFunds(amount, this.state.companyId).send({from: this.state.account})
+        .then(console.log)
+        .then(this.getCompanyInfo())
+    }
+
+    async payEmployee(address) {
+        await payrollContract.methods.payEmployee(address, this.state.companyId).send({from: this.state.account})
+        .then(console.log)
+        .then(this.getCompanyInfo())
     }
 
     closeEditModal() {
-        console.log('closing')
         this.setState({editingEmployee: false, editingAddress: ""});
     }
 
@@ -336,12 +307,22 @@ class Web3Setup extends Component {
 
         
         return (
+            
             <div>
             <Container>
+                <Row>
+                <Col>
+                <Card bg="dark" className ="companyInfo">
+                <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} /> 
+                </Card>
+                </Col>
+                <Col>
                 {this.state.connected? 
-                <Card bg="success" className="connectWallet">{this.state.account}</Card>
+                <Card bg="success" className="connectWallet">{`${this.state.account.toString().substring(0, 4)}...${this.state.account.toString().substring(38)}`}</Card>
                 : <ConnectWallet />
                 }
+                </Col>
+                </Row>
             </Container>
             
                 <Container className="top">
@@ -349,8 +330,7 @@ class Web3Setup extends Component {
                         
                         <Col>
                         <Container bg="dark">
-                        <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
-                        <Balance address={this.state.account} companyId={this.state.companyId} balance={this.state.balance}/>
+                        <Balance account={this.state.account} companyId={this.state.companyId} balance={this.state.balance} fundPayroll={this.fundPayroll} withdraw={this.withdrawFunds}/>
                         </Container>
                         </Col>
                         <Col>
@@ -362,6 +342,7 @@ class Web3Setup extends Component {
                         </Col>
                     </Row>
                 </Container>
+
                 <Container>
                 {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
                 <EmployeeList className="employeeList"
@@ -369,12 +350,12 @@ class Web3Setup extends Component {
                 companyId={this.state.companyId} 
                 companyAddress={this.state.account} 
                 roster={this.state.roster}
-                // showEditModal={this.showEditModal}
-                // closeEditModal={this.closeEditModal}
+                payEmployee={this.payEmployee}
                 editingEmployee={this.editingEmployee} 
                 />
                 
                 </Container>
+
 
             </div>
         )

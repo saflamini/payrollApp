@@ -1,8 +1,7 @@
 import React, {Component} from "react";
-import { web3 } from './config';
-import { payrollAddress } from './config'; 
 import { payrollContract } from './config';
 import CompanyForm from "./CompanyForm";
+import "./CompanyInfo.css"
 
 //create company info component
 
@@ -41,7 +40,7 @@ class CompanyInfo extends Component {
                 {this.props.company === "Please create a new company or connect a wallet"?
                 <CompanyForm 
                 createCompany={this.createCompany} 
-                />:<h1>{this.props.company}</h1>
+                />:<h1 className="companyName" >{this.props.company}</h1>
                 }
                 {/* <h3>Company Address: {this.props.account}</h3> */}
                 {/* <button onClick={this.getCompany}>Get Company</button> */}

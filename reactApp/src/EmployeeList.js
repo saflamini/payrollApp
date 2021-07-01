@@ -1,17 +1,17 @@
 import React, {Component} from 'react';
-import EmployeeForm from "./EmployeeForm";
 import Employee from "./Employee";
-import { payrollABI } from './config';
-import { payrollAddress } from './config';
+// import { payrollABI } from './config';
+// import { payrollAddress } from './config';
 import { payrollContract } from './config';
 import { v4 as uuidv4 } from 'uuid';
-import Web3 from 'web3';
+// import Web3 from 'web3';
 import "./EmployeeList.css";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+// import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
-import EditModal from './EditModal';
+import Card from 'react-bootstrap/Card';
+// import EditModal from './EditModal';
 
 
 
@@ -28,8 +28,7 @@ class EmployeeList extends Component {
 
         this.addEmployee = this.addEmployee.bind(this);
         this.renderEmployees = this.renderEmployees.bind(this);
-        this.remove = this.remove.bind(this);
-        this.updateName = this.updateName.bind(this);
+        // this.updateName = this.updateName.bind(this);
         this.updateSalary = this.updateSalary.bind(this);
         this.updateInterval = this.updateInterval.bind(this);
         this.payEmployee = this.payEmployee.bind(this);
@@ -52,53 +51,18 @@ class EmployeeList extends Component {
         )
     }
 
-    // addEmployee(employee) {
-    //     let newEmployee = {...employee, id: uuidv4()}
-    //     this.setState(state => ({ 
-    //         employees: [...state.employees, newEmployee]
-    //     }))
-    // }
-
-    fundPayroll(amount) {
-        
-    }
 
 
-    remove(id) {
-        this.setState({
-            employees: this.state.employees.filter(employee => employee.id !== id)
-        })
-    }
-
-    updateName(id, updatedName) {
-        let updatedEmployees = this.state.employees.map(employee => {
-            if(employee.id === id) {
-                return {...employee, name: updatedName}
-            }
-            return employee;
-        })
-        this.setState({employees: updatedEmployees})
-    }
-
-    // updateSalary(id, updatedSalary) {
+    // updateName(id, updatedName) {
     //     let updatedEmployees = this.state.employees.map(employee => {
     //         if(employee.id === id) {
-    //             return {...employee, salary: updatedSalary}
+    //             return {...employee, name: updatedName}
     //         }
     //         return employee;
     //     })
     //     this.setState({employees: updatedEmployees})
     // }
 
-    // updateInterval(id, updatedInterval) {
-    //     let updatedEmployees = this.state.employees.map(employee => {
-    //         if(employee.id === id) {
-    //             return {...employee, interval: updatedInterval}
-    //         }
-    //         return employee;
-    //     })
-    //     this.setState({employees: updatedEmployees})
-    // }  
 
     async updateSalary(address, companyId, newSalary) {
         this.props.handleModalUpdate()
@@ -116,9 +80,10 @@ class EmployeeList extends Component {
         .then(console.log)
     }
 
-    async payEmployee(address, companyId) {
-        await payrollContract.methods.payEmployee(address, companyId).send({from: this.props.account})
-        .then(console.log)
+    async payEmployee(address) {
+        this.props.payEmployee(address);
+        // await payrollContract.methods.payEmployee(address, companyId).send({from: this.props.account})
+        // .then(console.log)
     }
 
     //need to remove deleted employee from display
@@ -196,18 +161,6 @@ class EmployeeList extends Component {
 
     render() {
 
-        // if(this.state.editing) {
-        //     let e = this.getEditingEmployee();
-        //     console.log(e);
-        //     return (
-        //     <EditModal 
-        //     show={true} 
-        //     address={e.address} 
-        //     salary={e.salary} 
-        //     interval={e.interval}/>
-  
-        // )
-        // }
   
     
         return (
@@ -215,8 +168,9 @@ class EmployeeList extends Component {
             <div className="employeeList">
                 <Container>
                     <Row>
-                        {/* <Col xs={10}> */}
+                        <Card className="employeeListTitle" bg="dark">
                         <h3>Employee Roster</h3>
+                        </Card>
                         <Table responsive striped bordered hover variant="dark">
                         <thead>
                             <tr>
@@ -230,14 +184,6 @@ class EmployeeList extends Component {
                         {this.renderEmployees()}  
                         </Table> 
                    
-                        {/* </Col> */}
-
-                        {/* <Col>
-                        <div>
-                        <h4>Add a New Employee</h4>
-                        <EmployeeForm key={'form'} addEmployee={this.addEmployee}/>
-                        </div> 
-                        </Col> */}
                     </Row>
                 </Container>
             </div>
