@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import { payrollContract } from './config';
+// import { CompanyRegistry } from './config';
 import CompanyForm from "./CompanyForm";
 import "./CompanyInfo.css"
 
@@ -21,16 +21,20 @@ class CompanyInfo extends Component {
     //     // })      
     // }
    
-    createCompany(name) {
-        payrollContract.methods.createCompany(name).send({from: this.props.account, gas: 6721975})
-        .then(console.log)
+    async createCompany(name) {
+        this.props.createCompany(name);
+        // await CompanyRegistry.methods.createCompany(name).send({from: this.props.account, gas: 6721975})
+        // .then(console.log)
     }
 
+    //this is likely not needed
    async getCompany() {
-        let co = await payrollContract.methods.getCompany(this.props.account).call({from: this.props.account});
-        this.setState({
-            company: co
-        })       
+       this.props.getCompany();
+        // let co = await CompanyRegistry.methods.getCompanyAddress(this.props.account).call({from: this.props.account});
+        //state is not handled here, going to comment out
+        // this.setState({
+        //     company: co
+        // })       
     }
 
     render() {

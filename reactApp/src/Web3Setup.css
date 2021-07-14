@@ -2,23 +2,23 @@
     position:absolute;
     top:0;
     right:0;
-    color:#FFFFFF;
+    color: black;
     padding: 5px;
     border-radius: 3%;
     margin: .25%;
 }
 
 body {
-    background-color: #121212;
+    background-color: #FFFFFF;
 }
 
 .top {
     margin-top: 5%;
-    color: #FFFFFF;
+    color: black;
 }
 
 .employeeList {
-    color: #FFFFFF;
+    color: black;
     margin-top: 2%;
 }
 

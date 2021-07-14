@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import Fund from "./Fund";
 import Withdraw from './Withdraw';
 import "./Balance.css";
-import { payrollContract } from './config';
 import Card from 'react-bootstrap/esm/Card';
 import Container from 'react-bootstrap/esm/Container';
 import Button from 'react-bootstrap/esm/Button';
@@ -47,16 +46,16 @@ class Balance extends Component {
         //could benefit from triggering a re-render after new funds are added
         return (
             <Container>
-                <Card bg="dark" className="balance">
+                <Card bg="light" className="balance">
                 <h2>Your Balance</h2>
                 <h5>{`${Number(this.props.balance).toFixed(3)} ether`}</h5>
                 </Card>
-                <Card bg="dark" className="addFunds">
+                <Card bg="light" className="addFunds">
                 {this.state.addingFunds ? <Fund funding={this.fundPayroll}/>
                 :<Button size="sm" variant="success" onClick={this.handleClick}>Add Funding</Button>
                 }
                 </Card>
-                <Card bg="dark" className="withdrawFunds">
+                <Card bg="light" className="withdrawFunds">
                     <Withdraw withdraw={this.withdraw}/>
                 </Card>
             </Container>

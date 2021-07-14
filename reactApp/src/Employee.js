@@ -15,6 +15,7 @@ class Employee extends Component {
             salary: '',
             interval: '',
             editingAddress: '',
+            currencyAddress: '',
             paid: true
         }
 

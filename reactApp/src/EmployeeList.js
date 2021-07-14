@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import Employee from "./Employee";
 // import { payrollABI } from './config';
 // import { payrollAddress } from './config';
-import { payrollContract } from './config';
+// import { CompanyRegistry } from './config';
+// import { CompanyABI } from './config';
 import { v4 as uuidv4 } from 'uuid';
 // import Web3 from 'web3';
 import "./EmployeeList.css";
@@ -23,7 +24,8 @@ class EmployeeList extends Component {
             employees: [{name: 'sam'}],
             editing: false,
             showEdit: false,
-            showCreate: false
+            showCreate: false,
+            companyContract: this.props.companyContract
         }
 
         this.addEmployee = this.addEmployee.bind(this);
@@ -41,7 +43,7 @@ class EmployeeList extends Component {
     //but how to render them based on the connected company??
     addEmployee(employee, address) {
         let newEmployee = {...employee, id: uuidv4()}
-        payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
+        this.state.companyContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
         .then(console.log)
         .then(
         this.setState(state => ({ 
@@ -69,14 +71,14 @@ class EmployeeList extends Component {
         console.log(address);
         console.log(companyId);
         console.log(newSalary);
-        await payrollContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.props.account})
+        await this.state.companyContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.props.account})
         .then(console.log)
        
     }
 
     async updateInterval(address, companyId, newInterval) {
         this.props.handleModalUpdate()
-        await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.props.account})
+        await this.state.companyContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.props.account})
         .then(console.log)
     }
 
@@ -88,7 +90,7 @@ class EmployeeList extends Component {
 
     //need to remove deleted employee from display
     async removeEmployee(address, companyId) {
-        await payrollContract.methods.deleteEmployee(address, companyId).send({from: this.props.account})
+        await this.state.companyContract.methods.deleteEmployee(address, companyId).send({from: this.props.account})
         .then(console.log)
         // this.setState(state => {
         //     roster: state.roster.filter(employee => employee.address !== address)
@@ -168,10 +170,10 @@ class EmployeeList extends Component {
             <div className="employeeList">
                 <Container>
                     <Row>
-                        <Card className="employeeListTitle" bg="dark">
+                        <Card className="employeeListTitle" bg="light">
                         <h3>Employee Roster</h3>
                         </Card>
-                        <Table responsive striped bordered hover variant="dark">
+                        <Table responsive striped bordered hover bg="light">
                         <thead>
                             <tr>
                             <th>Address</th>

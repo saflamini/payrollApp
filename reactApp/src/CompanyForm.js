@@ -3,6 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
+import "./CompanyForm.css";
 
 
 class CompanyForm extends Component {
@@ -30,7 +31,7 @@ class CompanyForm extends Component {
 
     render() {
         return (
-            <Container>
+            <Container className="coForm">
                 <h3>Create Company</h3>
                 <Form >
                     <Form.Label htmlFor="companyName">Company Name: </Form.Label>

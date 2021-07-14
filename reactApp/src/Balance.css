@@ -1,13 +1,17 @@
 .addFunds {
     margin-top: 5%;
-    padding: 3%;
+    
+    /* padding: 3%; */
 }
 
 .balance {
-    padding: 3%;
+    display: grid;
+    align-items: flex-start;
+  
+    /* padding: 3%; */
 }
 
 .withdrawFunds {
     margin-top: 5%;
-    padding: 3%;
+    /* padding: 3%; */
 }

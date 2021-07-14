@@ -1,16 +1,21 @@
 import React, {Component} from "react";
+import { assets } from "./config";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 
 class Withdraw extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            withdrawal: ""
+            withdrawal: "",
+            currency: "USDC"
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleClick = this.handleClick.bind(this)
     }
 
     handleChange(evt) {
@@ -25,6 +30,12 @@ class Withdraw extends Component {
         this.setState({withdrawal: ""})
     }
 
+    handleClick(currency) {
+        this.setState({
+            currency: currency
+        })
+    }
+
     render() {
         return (
             <div>
@@ -33,7 +44,12 @@ class Withdraw extends Component {
                 <Form.Label htmlFor="withdrawal">Withdraw Funds: </Form.Label>
                 <InputGroup>
                 <Form.Control type="text" name="withdrawal" placeholder="Enter a number in wei..." onChange={this.handleChange} value={this.state.withdrawal}></Form.Control>
-                <Button type="submit" variant="success" size="sm" >Submit</Button>
+                <DropdownButton variant="dark" id="dropdown-basic-button" title={this.state.currency}>
+                        <Dropdown.Item onClick={() => this.handleClick('USDC')}>USDC</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.handleClick('DAI')}>DAI</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.handleClick('USDT')}>USDT</Dropdown.Item>
+                    </DropdownButton>
+                    <Button type="submit" variant="success" size="sm" >Submit</Button>
                 </InputGroup>
             </Form>
             </div>

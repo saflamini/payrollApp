@@ -1,7 +1,13 @@
 import React, {Component} from 'react';
+import { assets } from './config';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import InputGroup from 'react-bootstrap/InputGroup';
+
+
 
 
 class EmployeeForm extends Component {
@@ -10,11 +16,13 @@ class EmployeeForm extends Component {
         this.state = {
             name: '',
             address: '',
+            currency: 'USDC',
             salary: '',
             interval: ''
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleClick = this.handleClick.bind(this);
     }
 
     handleChange(evt) {
@@ -29,6 +37,13 @@ class EmployeeForm extends Component {
         this.props.addEmployee(this.state);
         this.setState({name: '', address: '', salary: '', interval: ''})
     }
+
+    handleClick(currency) {
+        this.setState({
+            currency: currency
+        })
+    }
+    
 
     render() {
 
@@ -48,8 +63,15 @@ class EmployeeForm extends Component {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                    <Form.Label htmlFor="salary">Salary </Form.Label>
+                <Form.Label htmlFor="salary">Salary </Form.Label>
+                    <InputGroup>
                     <Form.Control type="text" name="salary" value={this.state.salary} onChange={this.handleChange}></Form.Control>
+                    <DropdownButton variant="dark" id="dropdown-basic-button" title={this.state.currency}>
+                        <Dropdown.Item onClick={() => this.handleClick('USDC')}>USDC</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.handleClick('DAI')}>DAI</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.handleClick('USDT')}>USDT</Dropdown.Item>
+                    </DropdownButton>
+                    </InputGroup>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
