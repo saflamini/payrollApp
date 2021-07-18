@@ -1,5 +1,8 @@
 import React, {Component} from "react";
+import { web3 } from './config';
 import { assets } from "./config";
+import { BigNumber } from "bignumber.js";
+import { decimals } from "./config";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -28,9 +31,8 @@ class Fund extends Component {
 
     handleSubmit(evt) {
         evt.preventDefault();
-        console.log(assets[this.state.currency])
-        console.log(this.state.funding)
-        this.props.funding(this.state.funding, assets[this.state.currency]);
+        console.log(this.state.currency)
+        this.props.funding(new BigNumber(this.state.funding).shiftedBy(decimals[this.state.currency]), assets[this.state.currency]);
         this.setState({funding: ""})
     }
 

@@ -1,0 +1,33 @@
+import React, {Component} from "react";
+import Container from 'react-bootstrap/Container';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+
+class RunPayrollModal extends Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <Container>
+            <Modal show={true}>
+                <Modal.Header closeButton onClick={this.props.toggleRunningPayroll}>
+                  <Modal.Title>Run Payroll</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <h2>Are you sure you want to run payroll?</h2>
+                
+        </Modal.Body>
+        <Modal.Footer>
+        <Button variant="danger" onClick={this.props.runPayroll}>Run</Button> 
+        <Button className="goBack" variant="secondary" onClick={this.props.toggleRunningPayroll}>Cancel</Button>
+        </Modal.Footer>
+      </Modal>
+      </Container>
+        )
+    }
+}
+
+export default RunPayrollModal;

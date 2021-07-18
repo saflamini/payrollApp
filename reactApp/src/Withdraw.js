@@ -1,5 +1,7 @@
 import React, {Component} from "react";
 import { assets } from "./config";
+import { decimals } from "./config";
+import { BigNumber } from "bignumber.js";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -26,7 +28,8 @@ class Withdraw extends Component {
 
     handleSubmit(evt) {
         evt.preventDefault();
-        this.props.withdraw(this.state.withdrawal);
+        console.log(assets[this.state.currency])
+        this.props.withdraw(new BigNumber(this.state.withdrawal).shiftedBy(decimals[this.state.currency]), assets[this.state.currency]);
         this.setState({withdrawal: ""})
     }
 

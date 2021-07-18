@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import { web3 } from './config';
 import { assets } from './config';
+import { BigNumber } from "bignumber.js";
+import { decimals } from "./config";
+import {assetSymbols} from "./config";
 import { CompanyRegistry } from './config';
 import { CompanyABI } from './config';
 // import detectEthereumProvider from '@metamask/detect-provider';
@@ -9,8 +12,10 @@ import EmployeeList from './EmployeeList';
 import Balance from './Balance';
 import EditModal from './EditModal';
 import EmployeeForm from './EmployeeForm';
+import RunPayrollModal from "./RunPayrollModal";
 // import { Contract } from 'web3-eth-contract';
 // import { payrollAddress } from './config';
+import {USDC, DAI, USDT} from "./seedBalances.js";
 import './Web3Setup.css';
 import ConnectWallet from './ConnectWallet';
 import CompanyInfo from "./CompanyInfo";
@@ -18,7 +23,18 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
+import Navigation from "./Navigation";
+import FundPage from "./FundPage";
+import Home from "./Home";
+import {Route, Switch, Link} from "react-router-dom";
+import {BrowserRouter} from "react-router-dom";
 
+//need to run all state and key operations here
+//use router here to pass necessary prop values to other page components
+//Switch
+//Route 1-path to /home - render home
+//Route 2-path to /fundpage - render fundpage
+//Route 3-path to /manageroster - render that page.... and so on
 
 
 
@@ -27,7 +43,6 @@ class Web3Setup extends Component {
     constructor(props) {
         super(props);
      
-    
         this.state = {
             connected: false,
             account: "",
@@ -37,9 +52,12 @@ class Web3Setup extends Component {
             companyAddress: "",
             companyId: null,
             roster: [], 
-            balance: "",
+            usdcBalance: "",
+            daiBalance: "",
+            usdtBalance: "",
             editingEmployee: false,
-            editingAddress: ""
+            editingAddress: "",
+            runningPayroll: false
         };
 
         this.setup = this.setup.bind(this);
@@ -47,8 +65,11 @@ class Web3Setup extends Component {
         this.disconnected = this.disconnected.bind(this);
         this.getCompany = this.getCompany.bind(this);
         this.getCompanyInfo = this.getCompanyInfo.bind(this);
-        this.getCompanyBalance = this.getCompanyBalance.bind(this);
+        this.getCompanyBalances = this.getCompanyBalances.bind(this);
         this.getEmployeeArray = this.getEmployeeArray.bind(this);
+        //focus here when we get back (show a pop up window which will allow user to confirm that they want to run payroll, and see total projected outflow)
+        this.toggleRunningPayroll = this.toggleRunningPayroll.bind(this);
+        this.showRunPayroll = this.showRunPayroll.bind(this);
         this.showEditModal = this.showEditModal.bind(this);
         this.closeEditModal = this.closeEditModal.bind(this);
         this.editingEmployee = this.editingEmployee.bind(this);
@@ -59,6 +80,7 @@ class Web3Setup extends Component {
         this.addEmployee = this.addEmployee.bind(this);
         this.fundPayroll = this.fundPayroll.bind(this);
         this.payEmployee = this.payEmployee.bind(this);
+        this.runPayroll = this.runPayroll.bind(this);
         this.withdrawFunds = this.withdrawFunds.bind(this);
         this.createCompany = this.createCompany.bind(this);
     }
@@ -79,9 +101,7 @@ class Web3Setup extends Component {
             this.setState({account: accts[0]})
             this.setState({connected: true})
             this.getCompany();
-            console.log('the fuck')
-            this.getEmployeeArray()
-            // this.getCompanyInfo();
+            // this.getEmployeeArray()
         }
     }
 
@@ -91,9 +111,6 @@ class Web3Setup extends Component {
 
 
     async setup() {
-
-        console.log(this.state.companyContract)
-
 
         // This function detects most providers injected at window.ethereum
         // const provider = await detectEthereumProvider();
@@ -146,7 +163,6 @@ class Web3Setup extends Component {
 
         if (currentAccount !== null) {
             this.setState({account: currentAccount})
-            console.log('here');
             this.getCompany();
             // this.getCompanyInfo();
         }
@@ -158,6 +174,10 @@ class Web3Setup extends Component {
             //if we have a connected metamask account, run getCompany and get companyId
             //these two functions also run if a reload occurs
             this.getCompany()
+            // this.getCompanyInfo()
+            // this.getCompanyBalances()
+            // console.log(this.state.companyAddress)
+
             // this.getCompanyInfo();
         }
 
@@ -166,16 +186,12 @@ class Web3Setup extends Component {
 
     //gets the company name for display
     async getCompany() {
-        console.log("is this shit working")
-        console.log(this.state.account)
-        //make sure that id is properly set in state
         let coAddress = await this.state.companyRegistry.methods.getCompanyAddress(this.state.account).call({from: this.state.account});
         console.log(coAddress)
   
 
         if (coAddress.length !== 0 && coAddress !== "0x0000000000000000000000000000000000000000") {
             const CompanyContract = new web3.eth.Contract(CompanyABI, coAddress);
-            console.log(CompanyContract)
             let companyName = await CompanyContract.methods.name().call();
             //probably need to get company name out of here somehow
             this.setState({
@@ -183,9 +199,7 @@ class Web3Setup extends Component {
                 companyAddress: coAddress,
                 company: companyName
             })
-            console.log(companyName)
-
-            console.log(this.state.companyContract)
+            this.getCompanyBalances()
             this.getEmployeeArray()
 
         }  
@@ -203,25 +217,28 @@ class Web3Setup extends Component {
         //need a way to call company ID using the owner's connected address
         //should likely be added as a method to the registry
         // let coId = await payrollContract.methods.getCompanyId(this.state.account).call({from: this.state.account});
-      
+        console.log('company info is called')
         this.getEmployeeArray(); 
-        // this.getCompanyBalance();
+        this.getCompanyBalances();
     }
 
   
 //call company contract
     async getEmployeeArray() {
-        console.log(this.state.companyContract)
+        // console.log(this.state.companyContract)
         let employeeArray = await this.state.companyContract.methods.getEmployeesByCompany().call({from: this.state.account});
         console.log(employeeArray)
         let employeeRender = [];
         for (let i = 0; i < employeeArray.length; i++) {
             let salary = await this.state.companyContract.methods.getEmployeeSalary(employeeArray[i]).call({from: this.state.account});
             let interval = await this.state.companyContract.methods.getEmployeeInterval(employeeArray[i]).call({from: this.state.account});
+            let currency = await this.state.companyContract.methods.getEmployeeCurrency(employeeArray[i]).call({from: this.state.account});
+            let adjustedSalary = new BigNumber(salary).shiftedBy(-1 * decimals[assetSymbols[currency]]).c[0];
             if (employeeArray[i] !== "0x0000000000000000000000000000000000000000") {
                 employeeRender.push({
                 address: employeeArray[i], 
-                salary: salary, 
+                currency: currency,
+                salary: adjustedSalary, 
                 interval: interval
             })}}
 
@@ -232,9 +249,15 @@ class Web3Setup extends Component {
 
     //call company contract
     //split up by asset type
-    async getCompanyBalance() {
-        let bal = await this.state.companyContract.methods.getCompanyBalance(this.state.account).call({from: this.state.account});
-        this.setState({balance: web3.utils.fromWei(bal.toString(), 'ether')});
+    async getCompanyBalances() {
+        let usdcBal = await USDC.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
+        let daiBal = await DAI.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
+        let usdtBal = await USDT.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
+        this.setState({
+            usdcBalance: usdcBal,
+            daiBalance: daiBal,
+            usdtBalance: usdtBal 
+        });
     }
 
     editingEmployee(employeeAddress) {
@@ -245,10 +268,13 @@ class Web3Setup extends Component {
     showEditModal(employeeAddress) {
         let currentSalary;
         let currentInterval;
+        let currencyAddress;
         for (let i = 0; i < this.state.roster.length; i++) {
             if (this.state.roster[i].address === employeeAddress) {
+                console.log(this.state.roster[i])
                 currentSalary = this.state.roster[i].salary;
                 currentInterval = this.state.roster[i].interval;
+                currencyAddress = this.state.roster[i].currency;
                 break;
             }
             
@@ -258,6 +284,7 @@ class Web3Setup extends Component {
             address={employeeAddress}
             salary={currentSalary}
             interval={currentInterval}
+            currencySymbol={assetSymbols[currencyAddress]}
             closeEditModal={this.closeEditModal}
             handleModalUpdate={this.handleModalUpdate}
             removeEmployee={this.removeEmployee}
@@ -288,7 +315,8 @@ class Web3Setup extends Component {
 
     async createCompany(name) {
         await this.state.companyRegistry.methods.createCompany(name).send({from: this.state.account, gas: 6721975})
-        .then(console.log);
+        .then(console.log)
+        .then(this.getCompany())
     }
 
     //for all of these - call the relevant company contract
@@ -299,6 +327,16 @@ class Web3Setup extends Component {
     }
 
     async updateSalary(address, newSalary) {
+        let employeeCurrency;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == address) {
+                // let d = decimals[assetSymbols[this.state.roster[i].currency]]
+                // let adjustedCurrency = new BigNumber(this.state.roster[i].currency).shiftedBy(-1 * d);
+                employeeCurrency = this.state.roster[i].currency;
+                break;
+            }
+        }
+        // let newSal = new BigNumber(newSalary).shiftedBy(decimals[assetSymbols[employeeCurrency]]);
         await this.state.companyContract.methods.editEmployeeSalary(address, newSalary).send({from: this.state.account})
         .then(console.log)
         .then(this.getEmployeeArray())
@@ -307,7 +345,8 @@ class Web3Setup extends Component {
 
     async addEmployee(employee) {
         // let newEmployee = {...employee, id: uuidv4()}
-        await this.state.companyContract.methods.createEmployee(employee.address, assets[employee.currency], employee.salary, employee.interval).send({from: this.state.account, gas: 6721975})
+        let employeeSalary = new BigNumber(employee.salary).shiftedBy(decimals[employee.currency]);
+        await this.state.companyContract.methods.createEmployee(employee.address, assets[employee.currency], employeeSalary, employee.interval).send({from: this.state.account, gas: 6721975})
         .then(console.log)
         .then(this.getCompanyInfo())
 
@@ -321,40 +360,70 @@ class Web3Setup extends Component {
     }
 
     async fundPayroll(amount, currencyAddress) {
-        await this.state.companyContract.methods.fundERCPayroll(amount, currencyAddress).send({from: this.state.account})
+        console.log(amount);
+        // console.log(currencyAddress.toString());
+        await this.state.companyContract.methods.fundERCPayroll(amount, currencyAddress).send({from: this.state.account,  gas: 6721975})
         .then(console.log)
-        .then(this.getCompanyInfo());
+        .then(this.getCompanyBalances());
     }
 
     async withdrawFunds(amount, currencyAddress) {
-        await this.state.companyContract.methods.withdrawFunds(amount, currencyAddress).send({from: this.state.account})
+        console.log(amount);
+        console.log(currencyAddress);
+        await this.state.companyContract.methods.withdrawFunds(amount, currencyAddress).send({from: this.state.account, gas: 6721975})
         .then(console.log)
-        .then(this.getCompanyInfo())
+        .then(this.getCompanyBalances())
     }
 
     async payEmployee(address) {
         await this.state.companyContract.methods.payEmployee(address).send({from: this.state.account})
         .then(console.log)
-        .then(this.getCompanyInfo())
+        .then(this.getCompany())
     }
 
     closeEditModal() {
         this.setState({editingEmployee: false, editingAddress: ""});
     }
 
+    toggleRunningPayroll() {
+        this.setState({runningPayroll: !this.state.runningPayroll})
+    }
+
+    async runPayroll() {
+        await this.state.companyContract.methods.runPayroll().send({from: this.state.account, gas: 6021975}).then(console.log)
+        this.setState({runningPayroll: false})
+        this.getCompany()
+    }
+   
+
+
+    //create a 'confirm run payroll' modal and pop it up when button in employee list is good to go
+    //then focus on some routing and other features
+    showRunPayroll() {
+        return (
+            <RunPayrollModal 
+            runPayroll={this.runPayroll}
+            toggleRunningPayroll={this.toggleRunningPayroll}
+            />
+        )
+    }
+
+ 
+
 
 
     render() {
         
         return (
-            
             <div>
+                {/* <Switch>
+                    <Route exact path="/balance" component={Balance}></Route>
+                </Switch> */}
+            <Navigation />
             <Container>
                 <Row>
                 <Col>
-                <Card bg="light" className ="companyInfo">
                 <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} createCompany={this.createCompany}/> 
-                </Card>
                 </Col>
                 <Col>
                 {this.state.connected? 
@@ -370,7 +439,14 @@ class Web3Setup extends Component {
                         
                         <Col>
                         <Container bg="light">
-                        <Balance account={this.state.account} companyId={this.state.companyId} balance={this.state.balance} fundPayroll={this.fundPayroll} withdraw={this.withdrawFunds}/>
+                        <Balance 
+                        account={this.state.account} 
+                        companyId={this.state.companyId} 
+                        usdcBalance={this.state.usdcBalance} 
+                        daiBalance={this.state.daiBalance}
+                        usdtBalance={this.state.usdtBalance}
+                        fundPayroll={this.fundPayroll} 
+                        withdraw={this.withdrawFunds}/>
                         </Container>
                         </Col>
                         <Col>
@@ -385,6 +461,7 @@ class Web3Setup extends Component {
 
                 <Container>
                 {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
+                {this.state.runningPayroll? this.showRunPayroll(): console.log('not running payroll')}
                 <EmployeeList className="employeeList"
                 account={this.state.account} 
                 companyId={this.state.companyId} 
@@ -393,6 +470,7 @@ class Web3Setup extends Component {
                 payEmployee={this.payEmployee}
                 editingEmployee={this.editingEmployee} 
                 companyContract={this.state.companyContract}
+                runningPayroll={this.toggleRunningPayroll}
                 />
                 
                 </Container>

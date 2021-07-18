@@ -12,7 +12,10 @@ import Row from 'react-bootstrap/Row';
 // import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
 import Card from 'react-bootstrap/Card';
+import { assetSymbols, decimals } from "./config";
+import Button from 'react-bootstrap/esm/Button';
 // import EditModal from './EditModal';
+import { BigNumber } from "bignumber.js";
 
 
 
@@ -37,6 +40,7 @@ class EmployeeList extends Component {
         this.removeEmployee = this.removeEmployee.bind(this);
         this.handleEditing = this.handleEditing.bind(this);
         this.getEditingEmployee = this.getEditingEmployee.bind(this);
+        this.run = this.run.bind(this);
     }
 
     //this creates an employee on the back end.
@@ -105,6 +109,11 @@ class EmployeeList extends Component {
         this.props.editingEmployee(employeeAddress);
     }
 
+    run() {
+        //this.props - pass to web3 setup for modal
+        this.props.runningPayroll()
+    }
+
    
 
     // renderEmployees() {
@@ -125,6 +134,8 @@ class EmployeeList extends Component {
     //         ))
     //     )
     // }
+
+    // ${new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)} usdt`}
     renderEmployees() {
         return (
             this.props.roster.map(employee => (
@@ -135,6 +146,8 @@ class EmployeeList extends Component {
                     account={this.props.account}
                     salary={employee.salary}
                     interval={employee.interval} 
+                    currencyAddress={employee.currency}
+                    currencySymbol={assetSymbols[employee.currency]}
                     id={employee.id}
                     companyId={this.props.companyId}
                     removeEmployee={this.removeEmployee}
@@ -173,6 +186,10 @@ class EmployeeList extends Component {
                         <Card className="employeeListTitle" bg="light">
                         <h3>Employee Roster</h3>
                         </Card>
+                        <Button
+                        variant="success" className="run-payroll" onClick={this.run}>
+                            Run Payroll
+                        </Button>
                         <Table responsive striped bordered hover bg="light">
                         <thead>
                             <tr>

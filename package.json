@@ -2,6 +2,7 @@
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.20.1",
     "@metamask/detect-provider": "^1.2.0",
+    "bn.js": "^5.2.0",
     "browserify": "^17.0.0",
     "ganache-cli": "^6.12.2",
     "prb-math": "^1.1.0",
@@ -24,6 +25,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "./reactApp/src/seedBalances.js",
     "build": "browserify ./src/index.js > ./src/dist/bundle.js",
     "watch": "watchify ./src/index.js -o ./src/dist/bundle.js"
   },

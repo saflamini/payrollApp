@@ -3,6 +3,8 @@ import Container from 'react-bootstrap/Container';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import {assets, decimals, assetSymbols} from "./config";
+import { BigNumber } from "bignumber.js";
 import "./EditModal.css";
 
 
@@ -12,8 +14,9 @@ constructor(props) {
     super(props);
     this.state = {
         employeeObject: {
-            address: this.props.address,
+            address: this.props.address ,
             salary: this.props.salary,
+            currency: this.props.currencySymbol,
             interval: this.props.interval
         },
         salary: "",
@@ -77,14 +80,29 @@ updateEmployeeObject() {
 }
 
 sendUpdate() {
-    this.props.handleModalUpdate(this.state.employeeObject);
+    //converts the state salary value to the proper # of decimals
+    let d = decimals[this.state.employeeObject.currency];
+    console.log(this.state.employeeObject.currency)
+    let num = new BigNumber(this.state.employeeObject.salary).shiftedBy(d);
+    console.log(num);
+    console.log('hi')
+    let adjustedEmployeeObject = {
+        address: this.state.employeeObject.address,
+        salary: new BigNumber(this.state.employeeObject.salary).shiftedBy(d).c[0],
+        interval: this.state.employeeObject.interval
+    }
+    this.props.handleModalUpdate(adjustedEmployeeObject);
 }
 
 updateSal() {
+    console.log(decimals[this.state.employeeObject.currency]);
+    let d = decimals[this.state.employeeObject.currency]
+    console.log(this.state.salary)
     this.setState({
         employeeObject: {
             address: this.props.address,
             salary: this.state.salary,
+            currency: this.props.currencySymbol,
             interval: this.props.interval
         },
         salaryEditing: false
@@ -96,6 +114,7 @@ updateInt() {
         employeeObject: {
             address: this.props.address,
             salary: this.props.salary,
+            currency: this.props.currencySymbol,
             interval: this.state.interval
         },
         intervalEditing: false

@@ -787,6 +787,26 @@ export const CompanyABI = [
     "constant": true
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_employeeAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getEmployeeCurrency",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
     "inputs": [],
     "name": "getEmployeesByCompany",
     "outputs": [
@@ -854,10 +874,10 @@ export const CompanyABI = [
 ]
 
 
-export const web3 = new Web3(window.ethereum.currenProvider || "http://127.0.0.1:8545")
+export const web3 = new Web3(window.ethereum.currentProvider || "http://127.0.0.1:8545")
 
 //change this over time
-export const CompanyRegistryAddress = "0xdEF8899BFE882C4674D543d0748E4D7b42E463C0";
+export const CompanyRegistryAddress = "0xd44e900018ed1d461953BD4aC931d3553338fB77";
 
 export const CompanyRegistry = new web3.eth.Contract(CompanyRegistryABI, CompanyRegistryAddress);
 
@@ -865,6 +885,18 @@ export const assets = {
   USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
   DAI: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
   USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+}
+
+export const assetSymbols = {
+  "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48": "USDC",
+  "0x6B175474E89094C44Da98b954EedeAC495271d0F": "DAI",
+  "0xdAC17F958D2ee523a2206206994597C13D831ec7": "USDT"
+}
+
+export const decimals = {
+  USDC: 6,
+  DAI: 18, 
+  USDT: 6
 }
 
 //ganache-cli --fork https://mainnet.infura.io/v3/09026dadca7744ea9d976f85b2a9723e --unlock 0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503

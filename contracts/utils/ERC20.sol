@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./IERC20.sol";
 import "./IERC20Metadata.sol";
 import "./Context.sol";
+import "./SafeERC20.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -31,6 +32,7 @@ import "./Context.sol";
  * allowances. See {IERC20-approve}.
  */
 contract ERC20 is Context, IERC20, IERC20Metadata {
+    using SafeERC20 for ERC20;
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -39,6 +41,14 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
     string private _name;
     string private _symbol;
+
+    //   function safeTransfer(
+    //     IERC20 token,
+    //     address to,
+    //     uint256 value
+    // ) internal {
+    //     _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+    // }
 
     /**
      * @dev Sets the values for {name} and {symbol}.

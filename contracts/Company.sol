@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 //make sure ownable, erc20, and math libraries all imported
 import "./utils/ERC20.sol";
 import "./utils/IERC20.sol";
+import "./utils/SafeERC20.sol";
 import "./utils/Ownable.sol";
 import "./utils/PRBMathUD60x18.sol";
 import "./utils/SafeMath.sol";
@@ -13,6 +14,9 @@ import "./CompanyRegistry.sol";
 
 
 contract Company is Ownable {
+
+    using SafeERC20 for IERC20;
+    using SafeERC20 for ERC20;
     
     //company name
     string public name;
@@ -21,7 +25,7 @@ contract Company is Ownable {
     uint256 companyId;
     
     //protocol fee - set to zero to begin
-    uint protocolFee;
+    uint protocolFee = 0;
     //where the protocol fee will be sent
     address protocolVault;
 
@@ -75,7 +79,7 @@ contract Company is Ownable {
     //fund payroll with ERC 20 token
     function fundERCPayroll(uint _amount, address _token) public payable onlyOwner {
         IERC20 token = IERC20(_token);
-        token.transferFrom(msg.sender, address(this), _amount);
+        token.safeTransferFrom(msg.sender, address(this), _amount);
         //might remove this balances mapping
         erc20Balances[_token] += _amount;
         //how are we going to record who owns the company? Should we refer to contract itself in events or owner?
@@ -89,7 +93,7 @@ contract Company is Ownable {
         erc20Balances[_token] -= _amount; 
         address owner = Ownable.owner();
         //send value of withdrawal to the owner of the contract
-        token.transfer(owner, _amount);
+        token.safeTransfer(owner, _amount);
         emit companyWithdrawal(address(this), _token, _amount);
     }
 
@@ -163,6 +167,10 @@ contract Company is Ownable {
         return erc20Balances[_tokenAddress];
     }
 
+    function getEmployeeCurrency(address _employeeAddress) public view returns (address) {
+        return employees[_employeeAddress].currency;
+    }
+
      //holy shit, I think that this worked. Try it again in app, then use getemployeeSal and getEmployeeInterval to return up to date salaries and intervals, and render them on front end.
     function getEmployeesByCompany() public view returns (address[] memory) {
         address[] memory employeeRoster = new address[](employeeList.length);
@@ -173,63 +181,71 @@ contract Company is Ownable {
     }
 
     //this should work for running entire payroll
-    function runPayroll() public onlyOwner {
-         for (uint i; i < employeeList.length; i++) {
-             address payable _address = employeeList[i].employeeAddress;
-            payEmployee(_address);
-         }
-    }
-
-
-//run payroll across the entire company
     // function runPayroll() public onlyOwner {
-    //     for (uint i; i < employeeList.length; i++) {
-    //         address payable _address = employeeList[i].employeeAddress;
-    //         uint paymentInterval;
-    //         //use library to create a payment interval to multiply by
-    //         paymentInterval = PRBMathUD60x18.div(employees[_address].interval, 365);
-    //         //convert interval days into seconds
-    //         uint intervalSeconds = employees[_address].interval * 86400;
+    //      for (uint i; i < employeeList.length; i++) {
+    //          address payable _address = employeeList[i].employeeAddress;
+    //         payEmployee(_address);
+    //      }
+    // }
+
+
+// run payroll across the entire company
+//this function is still reverting on front end
+    function runPayroll() public onlyOwner {
+        //looping through employeelist
+        for (uint i; i < employeeList.length; i++) {
+            //pulling out an address for each employee - prob not needed
+            address payable _address = employeeList[i].employeeAddress;
+            //defining a payment interval to multiply payment by
+            uint paymentInterval;
+            //use library to create a payment interval to multiply by
+            paymentInterval = PRBMathUD60x18.div(employees[_address].interval, 365);
+            //convert interval days into seconds
+            uint intervalSeconds = employees[_address].interval * 86400;
           
 
-    //         //require last payment date to be at least interval days ago
-    //         //last day paid + seconds since last day paid must be at least interval amount of time ago
-    //         //it must be longer than interval days since the employee has been paid
-    //         require (block.timestamp >= employees[_address].lastDayPaid + intervalSeconds);
+            //require last payment date to be at least interval days ago
+            //last day paid + seconds since last day paid must be at least interval amount of time ago
+            //it must be longer than interval days since the employee has been paid
+            if (block.timestamp >= employees[_address].lastDayPaid + intervalSeconds) {
+                //if the above is true, then
+                //get the currency address of the employee and create the token contract insgtance
+            address currency = employees[_address].currency;
+            ERC20 tokenContract = ERC20(currency);
 
-    //         address currency = employees[_address].currency;
-    //         ERC20 tokenContract = ERC20(currency);
+            //create variable for payment
+            uint payment;
 
-    //         uint payment;
+            //if a protocol fee
+            if (protocolFee > 0) {
+            //if protocol fee is turned on, send fee back to protocol before issuing payment
+            //consider switching order of operations here, or simply holding it in a separate variable to be claimed in bulk by the network
+            //would be ideal to NOT pass this gas payment along to users
+            uint feeTotal;
+            
+            uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
+            feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
+            payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
+            tokenContract.safeTransfer(protocolVault, feeTotal);
+            }
 
-        
-    //         if (protocolFee > 0) {
-    //         //if protocol fee is turned on, send fee back to protocol before issuing payment
-    //         //consider switching order of operations here, or simply holding it in a separate variable to be claimed in bulk by the network
-    //         //would be ideal to NOT pass this gas payment along to users
-    //         uint feeTotal;
-    //         // check this math, may need to use safeMath or recalculate
-    //         uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
-    //         feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
-    //         payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
-    //         tokenContract.transfer(protocolVault, feeTotal);
-    //         }
+            //use library to multiply by fraction
+            if (protocolFee == 0) {
+            payment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
+            } 
 
-    //         //use library to multiply by fraction
-    //         if (protocolFee == 0) {
-    //         payment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
-    //         } 
+            address payable payee = employees[_address].employeeAddress;
+            erc20Balances[currency] -= payment;
 
-    //         address payable payee = employees[_address].employeeAddress;
-    //         erc20Balances[currency] -= payment;
-
-    //         //set lastdaypaid to now
-    //         employees[_address].lastDayPaid = block.timestamp;
-    //         tokenContract.transfer(payee, payment);
-    //         //add the payment amount to total earnings of the employee
-    //         emit employeePaid(_address, currency, payment);
-    //     }
-    // }
+            //set lastdaypaid to now
+            employees[_address].lastDayPaid = block.timestamp;
+            tokenContract.safeTransfer(payee, payment);
+            //add the payment amount to total earnings of the employee
+            emit employeePaid(_address, currency, payment);
+            }
+            
+        }
+    }
 
     // //let an employee to call this function to receive their pay early
     function paidEarly(address _address) public {
@@ -264,7 +280,7 @@ contract Company is Ownable {
             // payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
             payment = SafeMath.sub(grossPayment, feeTotal);
 
-            tokenContract.transfer(protocolVault, feeTotal);
+            tokenContract.safeTransfer(protocolVault, feeTotal);
         }
 
         //use library to multiply by fraction
@@ -287,7 +303,7 @@ contract Company is Ownable {
 
         //run payment
 
-        tokenContract.transfer(payee, payment);
+        tokenContract.safeTransfer(payee, payment);
         //add the payment amount to total earnings of the employee
         emit employeePaid(_address, currency, payment);
     }
@@ -323,7 +339,7 @@ contract Company is Ownable {
             uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
             feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
             payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
-            tokenContract.transfer(protocolVault, feeTotal);
+            tokenContract.safeTransfer(protocolVault, feeTotal);
         }
 
         //use library to multiply by fraction
@@ -337,7 +353,7 @@ contract Company is Ownable {
         //set last day paid to now
         employees[_address].lastDayPaid = block.timestamp;
 
-        tokenContract.transfer(payee, payment);
+        tokenContract.safeTransfer(payee, payment);
         //add the payment amount to total earnings of the employee
         emit employeePaid(_address, currency, payment);
     }
@@ -358,7 +374,7 @@ contract Company is Ownable {
             // check this math, may need to use safeMath or recalculate
             feeTotal = protocolFee;
             payment = SafeMath.sub(_amount, feeTotal);
-            tokenContract.transfer(protocolVault, feeTotal);
+            tokenContract.safeTransfer(protocolVault, feeTotal);
         }
 
         //use library to multiply by fraction
@@ -371,7 +387,7 @@ contract Company is Ownable {
         erc20Balances[currency] -= payment;
         
 
-        tokenContract.transfer(payee, payment);
+        tokenContract.safeTransfer(payee, payment);
         //add the payment amount to total earnings of the employee
         emit employeePaid(_address, currency, payment);
     }

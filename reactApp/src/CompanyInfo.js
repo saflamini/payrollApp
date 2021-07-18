@@ -2,6 +2,8 @@ import React, {Component} from "react";
 // import { CompanyRegistry } from './config';
 import CompanyForm from "./CompanyForm";
 import "./CompanyInfo.css"
+import Card from "react-bootstrap/Card";
+import Container from "react-bootstrap/Container";
 
 //create company info component
 
@@ -40,15 +42,18 @@ class CompanyInfo extends Component {
     render() {
 
         return (
-            <div>
+            <Card className="companyInfo">
                 {this.props.company === "Please create a new company or connect a wallet"?
                 <CompanyForm 
                 createCompany={this.createCompany} 
-                />:<h1 className="companyName" >{this.props.company}</h1>
+                />:
+                
+                    <h4>{this.props.company}</h4>
+                
                 }
                 {/* <h3>Company Address: {this.props.account}</h3> */}
                 {/* <button onClick={this.getCompany}>Get Company</button> */}
-            </div>
+                </Card>
         )
     }
 }

@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import { web3 } from './config';
+import { BigNumber } from "bignumber.js";
+
 
 
 class Employee extends Component {
@@ -16,6 +18,7 @@ class Employee extends Component {
             interval: '',
             editingAddress: '',
             currencyAddress: '',
+            currencySymbol: '',
             paid: true
         }
 
@@ -58,7 +61,7 @@ class Employee extends Component {
     }
 
     toggleModal() {
-        this.props.handleEditing(this.props.address, this.props.companyId)
+        this.props.handleEditing(this.props.address)
     }
        
 
@@ -70,7 +73,8 @@ class Employee extends Component {
             // name: this.props.name,
             address: this.props.address,
             salary: this.props.salary,
-            interval: this.props.interval
+            interval: this.props.interval,
+            currencySymbol: this.props.currencySymbol
         }
 
             let result;
@@ -78,7 +82,8 @@ class Employee extends Component {
       
             <tr>
                 <td>{employeeObject.address}</td>
-                <td>{`${web3.utils.fromWei(employeeObject.salary.toString(), 'ether')} eth`} </td>
+                {/* <td>{`${web3.utils.fromWei(employeeObject.salary.toString(), 'ether')} ${employeeObject.currencySymbol}`} </td> */}
+                <td>{`${employeeObject.salary} ${employeeObject.currencySymbol}`} </td>
                 <td>{`${(employeeObject.interval / 7).toFixed(2)} weeks`}</td>
                 <td>{this.state.paid?<Button variant="success" onClick={this.handlePayEmployee}>Pay</Button>
                 :<Spinner animation="border" variant="success"></Spinner>}</td>
