@@ -46,7 +46,7 @@ class Withdraw extends Component {
             <Form onSubmit={this.handleSubmit}>
                 <Form.Label htmlFor="withdrawal">Withdraw Funds: </Form.Label>
                 <InputGroup>
-                <Form.Control type="text" name="withdrawal" placeholder="Enter a number in wei..." onChange={this.handleChange} value={this.state.withdrawal}></Form.Control>
+                <Form.Control type="text" name="withdrawal" placeholder="Enter a dollar amount..." onChange={this.handleChange} value={this.state.withdrawal}></Form.Control>
                 <DropdownButton variant="dark" id="dropdown-basic-button" title={this.state.currency}>
                         <Dropdown.Item onClick={() => this.handleClick('USDC')}>USDC</Dropdown.Item>
                         <Dropdown.Item onClick={() => this.handleClick('DAI')}>DAI</Dropdown.Item>

@@ -24,7 +24,7 @@ class Home extends Component {
                     daiBalance={this.props.daiBalance}
                     usdtBalance={this.props.usdtBalance}
                     fundPayroll={this.props.fundPayroll} 
-                    withdraw={this.props.withdrawFunds}
+                    withdraw={this.props.withdraw}
                     />
                 </Container>
                 <Container className="bottom">
@@ -40,7 +40,8 @@ class Home extends Component {
                     showPayrollModal={this.props.showPayrollModal}
                     renderPayrollModal={this.props.renderPayrollModal}
                     closePayrollModal={this.props.closePayrollModal}
-                  
+                    toggleAddEmployee={this.props.toggleAddEmployee}
+                    closeCreateModal={this.props.closeCreateModal}
                     />
                 </Container>
             </div>

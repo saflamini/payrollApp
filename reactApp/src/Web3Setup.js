@@ -27,6 +27,7 @@ import Card from 'react-bootstrap/Card';
 import Navigation from "./Navigation";
 import FundPage from "./FundPage";
 import Home from "./Home";
+import EmployeeFormModal from "./EmployeeFormModal";
 import {Route, Switch, Link} from "react-router-dom";
 import {BrowserRouter} from "react-router-dom";
 import ManageRoster from './ManageRoster';
@@ -61,7 +62,8 @@ class Web3Setup extends Component {
             editingAddress: "",
             payingAddress: "",
             runningPayroll: false,
-            paying: false
+            paying: false,
+            creatingEmployee: false
         };
 
         this.setup = this.setup.bind(this);
@@ -93,6 +95,9 @@ class Web3Setup extends Component {
         this.showPayModal = this.showPayModal.bind(this);
         this.getLastDayPaid = this.getLastDayPaid.bind(this);
         this.sendSinglePayment = this.sendSinglePayment.bind(this);
+        this.toggleCreateModal = this.toggleCreateModal.bind(this);
+        this.showCreateModal = this.showCreateModal.bind(this);
+        this.closeCreateModal = this.closeCreateModal.bind(this);
     }
 
 
@@ -490,6 +495,25 @@ class Web3Setup extends Component {
         })
     }
 
+    toggleCreateModal() {
+        this.setState({
+            creatingEmployee: true
+        })
+    }
+
+    showCreateModal() {
+        return (
+            <EmployeeFormModal
+            addEmployee={this.addEmployee}
+            closeCreateModal={this.closeCreateModal}
+            />
+        )
+    }
+
+    closeCreateModal() {
+        this.setState({creatingEmployee: false})
+    }
+
 
     //create a 'confirm run payroll' modal and pop it up when button in employee list is good to go
    
@@ -541,6 +565,8 @@ class Web3Setup extends Component {
                     renderPayrollModal={this.renderPayrollModal}
                     closePayrollModal={this.closePayrollModal}
                     payingEmployee={this.payingEmployee}
+                    toggleAddEmployee={this.toggleCreateModal}
+                    closeCreateModal={this.closeCreateModal}
                     />
                     }>
                 </Route>
@@ -568,6 +594,8 @@ class Web3Setup extends Component {
                 showPayrollModal={this.showPayrollModal}
                 renderPayrollModal={this.renderPayrollModal}
                 closePayrollModal={this.closePayrollModal}
+                toggleAddEmployee={this.toggleCreateModal}
+                closeCreateModal={this.closeCreateModal}
                 />
                 }>
                 </Route>
@@ -603,6 +631,7 @@ class Web3Setup extends Component {
                 {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
                 {this.state.runningPayroll? this.renderPayrollModal(): console.log('not running payroll')}
                 {this.state.paying? this.showPayModal(this.state.payingAddress): console.log('not paying')}
+                {this.state.creatingEmployee? this.showCreateModal(): console.log('not creating')}
 
                 {/* <EmployeeList className="employeeList"
                 account={this.state.account} 

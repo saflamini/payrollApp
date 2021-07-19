@@ -80,7 +80,7 @@ class Balance extends Component {
                 <h3>Total Funding</h3>
                 <Pie className="pie"
                 data={{
-                    labels: ["DAI", "USDC", "USDT"],
+                    labels: ["USDC", "DAI", "USDT"],
                     datasets: [
                     {
                     label: 'Funding Breakdown',

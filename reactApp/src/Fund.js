@@ -49,7 +49,7 @@ class Fund extends Component {
             <Form onSubmit={this.handleSubmit}>
                 <Form.Label htmlFor="funding">Add Funds: </Form.Label>
                 <InputGroup>
-                <Form.Control type="text" name="funding" placeholder="Enter a number in wei..." onChange={this.handleChange} value={this.state.funding}></Form.Control>
+                <Form.Control type="text" name="funding" placeholder="Enter a dollar amount..." onChange={this.handleChange} value={this.state.funding}></Form.Control>
                 <DropdownButton variant="dark" id="dropdown-basic-button" title={this.state.currency}>
                         <Dropdown.Item onClick={() => this.handleClick('USDC')}>USDC</Dropdown.Item>
                         <Dropdown.Item onClick={() => this.handleClick('DAI')}>DAI</Dropdown.Item>

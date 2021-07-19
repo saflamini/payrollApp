@@ -42,6 +42,7 @@ class EmployeeList extends Component {
         this.handlePaying = this.handlePaying.bind(this);
         this.getEditingEmployee = this.getEditingEmployee.bind(this);
         this.run = this.run.bind(this);
+        this.toggleAddEmployee = this.toggleAddEmployee.bind(this);
     }
 
     //this creates an employee on the back end.
@@ -117,6 +118,11 @@ class EmployeeList extends Component {
     run() {
         //this.props - pass to web3 setup for modal
         this.props.showPayrollModal()
+    }
+
+    toggleAddEmployee() {
+        console.log('working')
+        this.props.toggleAddEmployee();
     }
 
    
@@ -196,6 +202,10 @@ class EmployeeList extends Component {
                         <Button
                         variant="success" className="run-payroll" onClick={this.run}>
                             Run Payroll
+                        </Button>
+                        <Button
+                        variant="primary" className="add-employee" onClick={this.toggleAddEmployee}>
+                            Add New Employee
                         </Button>
                         <Table responsive striped bordered hover bg="light">
                         <thead>
