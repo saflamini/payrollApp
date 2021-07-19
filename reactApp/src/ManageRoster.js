@@ -25,9 +25,13 @@ class ManageRoster extends Component {
                 companyAddress={this.props.account} 
                 roster={this.props.roster}
                 payEmployee={this.props.payEmployee}
+                payingEmployee={this.props.payingEmployee}
                 editingEmployee={this.props.editingEmployee} 
                 companyContract={this.props.companyContract}
-                runningPayroll={this.props.toggleRunningPayroll}
+                showPayrollModal={this.props.showPayrollModal}
+                renderPayrollModal={this.props.renderPayrollModal}
+                closePayrollModal={this.props.closePayrollModal}
+                
                 />
             </div>
         )

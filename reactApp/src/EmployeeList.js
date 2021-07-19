@@ -39,6 +39,7 @@ class EmployeeList extends Component {
         this.payEmployee = this.payEmployee.bind(this);
         this.removeEmployee = this.removeEmployee.bind(this);
         this.handleEditing = this.handleEditing.bind(this);
+        this.handlePaying = this.handlePaying.bind(this);
         this.getEditingEmployee = this.getEditingEmployee.bind(this);
         this.run = this.run.bind(this);
     }
@@ -109,9 +110,13 @@ class EmployeeList extends Component {
         this.props.editingEmployee(employeeAddress);
     }
 
+    handlePaying(employeeAddress) {
+        this.props.payingEmployee(employeeAddress)
+    }
+
     run() {
         //this.props - pass to web3 setup for modal
-        this.props.runningPayroll()
+        this.props.showPayrollModal()
     }
 
    
@@ -146,6 +151,7 @@ class EmployeeList extends Component {
                     account={this.props.account}
                     salary={employee.salary}
                     interval={employee.interval} 
+                    lastDayPaid={employee.lastDayPaid}
                     currencyAddress={employee.currency}
                     currencySymbol={assetSymbols[employee.currency]}
                     id={employee.id}
@@ -156,6 +162,7 @@ class EmployeeList extends Component {
                     updateSalary={this.updateSalary}
                     updateInterval={this.updateInterval}
                     handleEditing={this.handleEditing}
+                    handlePaying={this.handlePaying}
                     />}
                 </tbody>
             ))
@@ -193,8 +200,8 @@ class EmployeeList extends Component {
                         <Table responsive striped bordered hover bg="light">
                         <thead>
                             <tr>
-                            <th>Address</th>
-                            <th>Salary</th>
+                            <th>Employee Address</th>
+                            <th>Annual Salary</th>
                             <th>Interval</th>
                             <th>Pay</th>
                             <th>Edit</th>

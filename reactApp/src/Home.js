@@ -4,7 +4,7 @@ import Balance from "./Balance";
 import Navigation from "./Navigation";
 import Container from "react-bootstrap/esm/Container";
 import ConnectWallet from "./ConnectWallet";
-
+import './Home.css'
 //still in testing - page does not work 
 
 
@@ -27,15 +27,20 @@ class Home extends Component {
                     withdraw={this.props.withdrawFunds}
                     />
                 </Container>
-                <Container>
-                    <EmployeeList className="employeeList"
+                <Container className="bottom">
+                    <EmployeeList 
+                    className="employeeList"
                     account={this.props.account} 
                     companyAddress={this.props.account} 
                     roster={this.props.roster}
                     payEmployee={this.props.payEmployee}
                     editingEmployee={this.props.editingEmployee} 
+                    payingEmployee={this.props.payingEmployee}
                     companyContract={this.props.companyContract}
-                    runningPayroll={this.props.toggleRunningPayroll}
+                    showPayrollModal={this.props.showPayrollModal}
+                    renderPayrollModal={this.props.renderPayrollModal}
+                    closePayrollModal={this.props.closePayrollModal}
+                  
                     />
                 </Container>
             </div>

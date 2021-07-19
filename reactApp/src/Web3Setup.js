@@ -11,6 +11,7 @@ import { CompanyABI } from './config';
 import EmployeeList from './EmployeeList';
 import Balance from './Balance';
 import EditModal from './EditModal';
+import PayModal from "./PayModal";
 import EmployeeForm from './EmployeeForm';
 import RunPayrollModal from "./RunPayrollModal";
 // import { Contract } from 'web3-eth-contract';
@@ -58,7 +59,9 @@ class Web3Setup extends Component {
             usdtBalance: "",
             editingEmployee: false,
             editingAddress: "",
-            runningPayroll: false
+            payingAddress: "",
+            runningPayroll: false,
+            paying: false
         };
 
         this.setup = this.setup.bind(this);
@@ -69,9 +72,12 @@ class Web3Setup extends Component {
         this.getCompanyBalances = this.getCompanyBalances.bind(this);
         this.getEmployeeArray = this.getEmployeeArray.bind(this);
         //focus here when we get back (show a pop up window which will allow user to confirm that they want to run payroll, and see total projected outflow)
-        this.toggleRunningPayroll = this.toggleRunningPayroll.bind(this);
-        this.showRunPayroll = this.showRunPayroll.bind(this);
+        this.showPayrollModal = this.showPayrollModal.bind(this);
+        this.closePayrollModal = this.closePayrollModal.bind(this);
+        this.renderPayrollModal = this.renderPayrollModal.bind(this);
         this.showEditModal = this.showEditModal.bind(this);
+        this.payingEmployee = this.payingEmployee.bind(this);
+        this.closePayModal = this.closePayModal.bind(this);
         this.closeEditModal = this.closeEditModal.bind(this);
         this.editingEmployee = this.editingEmployee.bind(this);
         this.handleModalUpdate = this.handleModalUpdate.bind(this);
@@ -84,6 +90,9 @@ class Web3Setup extends Component {
         this.runPayroll = this.runPayroll.bind(this);
         this.withdrawFunds = this.withdrawFunds.bind(this);
         this.createCompany = this.createCompany.bind(this);
+        this.showPayModal = this.showPayModal.bind(this);
+        this.getLastDayPaid = this.getLastDayPaid.bind(this);
+        this.sendSinglePayment = this.sendSinglePayment.bind(this);
     }
 
 
@@ -236,9 +245,11 @@ class Web3Setup extends Component {
             let currency = await this.state.companyContract.methods.getEmployeeCurrency(employeeArray[i]).call({from: this.state.account});
             let adjustedSalary = new BigNumber(salary).shiftedBy(-1 * decimals[assetSymbols[currency]]).c[0];
             if (employeeArray[i] !== "0x0000000000000000000000000000000000000000") {
+                let lastDay = await this.getLastDayPaid(employeeArray[i]);
                 employeeRender.push({
                 address: employeeArray[i], 
                 currency: currency,
+                lastDayPaid: lastDay,
                 salary: adjustedSalary, 
                 interval: interval
             })}}
@@ -263,6 +274,7 @@ class Web3Setup extends Component {
 
     editingEmployee(employeeAddress) {
         this.setState({editingEmployee: true, editingAddress: employeeAddress});
+        //the below line may not be necessary
         this.showEditModal(employeeAddress)
     }
 
@@ -272,7 +284,6 @@ class Web3Setup extends Component {
         let currencyAddress;
         for (let i = 0; i < this.state.roster.length; i++) {
             if (this.state.roster[i].address === employeeAddress) {
-                console.log(this.state.roster[i])
                 currentSalary = this.state.roster[i].salary;
                 currentInterval = this.state.roster[i].interval;
                 currencyAddress = this.state.roster[i].currency;
@@ -291,6 +302,10 @@ class Web3Setup extends Component {
             removeEmployee={this.removeEmployee}
             />
         )
+    }
+
+    closeEditModal() {
+        this.setState({editingEmployee: false, editingAddress: ""});
     }
 
     handleModalUpdate(employeeObject) {
@@ -382,32 +397,103 @@ class Web3Setup extends Component {
         .then(this.getCompany())
     }
 
-    closeEditModal() {
-        this.setState({editingEmployee: false, editingAddress: ""});
-    }
-
-    toggleRunningPayroll() {
-        this.setState({runningPayroll: !this.state.runningPayroll})
-    }
-
     async runPayroll() {
         await this.state.companyContract.methods.runPayroll().send({from: this.state.account, gas: 6021975}).then(console.log)
         this.setState({runningPayroll: false})
         this.getCompany()
     }
-   
 
+    async getLastDayPaid(employeeAddress) {
+        let rawDay = await this.state.companyContract.methods.getLastDayPaid(employeeAddress).call({from: this.state.account});
+        return rawDay;
+    }
 
-    //create a 'confirm run payroll' modal and pop it up when button in employee list is good to go
-    //then focus on some routing and other features
-    showRunPayroll() {
+    async sendSinglePayment(employeeAddress, amount) {
+        let currency;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == employeeAddress) {
+                currency = assetSymbols[this.state.roster[i].currency];
+                break;
+            }
+        }
+        let payment = new BigNumber(amount).shiftedBy(decimals[currency]);
+        await this.state.companyContract.methods.sendOneOffPayment(employeeAddress, payment).send({from: this.state.account}).then(console.log);
+        //include a loader here
+    }
+
+    renderPayrollModal() {
         return (
             <RunPayrollModal 
             runPayroll={this.runPayroll}
-            toggleRunningPayroll={this.toggleRunningPayroll}
+            showPayrollModal={this.showPayrollModal}
+            closePayrollModal={this.closePayrollModal}
             />
         )
     }
+    
+    showPayrollModal() {
+        this.setState({runningPayroll: true});
+        // this.renderPayrollModal(employeeAddress)
+    }
+
+    closePayrollModal() {
+        this.setState({runningPayroll: false});
+    }
+
+    
+   payingEmployee(employeeAddress) {
+       console.log(employeeAddress)
+        this.setState({payingAddress: employeeAddress, paying: true})
+        
+        // if(this.state.payingAddress == employeeAddress) {
+        //     this.setState({paying: true})
+        // }
+        //the below line may not be necessary
+        // this.showPayModal(this.state.payingAddress)
+    }
+   
+
+    showPayModal(employeeAddress) {
+        console.log(this.state.payingAddress)
+        let currentSalary;
+        let currentInterval;
+        let currencyAddress;
+        let lastDayPaid;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address === employeeAddress) {
+                console.log(this.state.roster[i])
+                currentSalary = this.state.roster[i].salary;
+                currentInterval = this.state.roster[i].interval;
+                currencyAddress = this.state.roster[i].currency;
+                lastDayPaid = this.state.roster[i].lastDayPaid;
+                break;
+            }
+        }
+        return (
+            <PayModal 
+            address={employeeAddress}
+            salary={currentSalary}
+            interval={currentInterval}
+            currencySymbol={assetSymbols[currencyAddress]}
+            lastDayPaid={lastDayPaid}
+            closePayModal={this.closePayModal}
+            payEmployee={this.payEmployee}
+            sendSinglePayment={this.sendSinglePayment}
+            />
+        )
+    }
+
+    closePayModal() {
+        this.setState({
+            paying: false, 
+            payingAddress: ""
+        })
+    }
+
+
+    //create a 'confirm run payroll' modal and pop it up when button in employee list is good to go
+   
+    
 
  
 
@@ -451,7 +537,10 @@ class Web3Setup extends Component {
                     payEmployee={this.payEmployee}
                     editingEmployee={this.editingEmployee} 
                     companyContract={this.companyContract}
-                    runningPayroll={this.toggleRunningPayroll}
+                    showPayrollModal={this.showPayrollModal}
+                    renderPayrollModal={this.renderPayrollModal}
+                    closePayrollModal={this.closePayrollModal}
+                    payingEmployee={this.payingEmployee}
                     />
                     }>
                 </Route>
@@ -471,11 +560,14 @@ class Web3Setup extends Component {
                 account={this.state.account} 
                 companyAddress={this.state.account} 
                 roster={this.state.roster}
+                payingEmployee={this.payingEmployee}
                 payEmployee={this.payEmployee}
                 editingEmployee={this.editingEmployee} 
                 companyContract={this.state.companyContract}
-                runningPayroll={this.toggleRunningPayroll}
                 addEmployee={this.addEmployee}
+                showPayrollModal={this.showPayrollModal}
+                renderPayrollModal={this.renderPayrollModal}
+                closePayrollModal={this.closePayrollModal}
                 />
                 }>
                 </Route>
@@ -509,7 +601,8 @@ class Web3Setup extends Component {
 
                 <Container>
                 {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
-                {this.state.runningPayroll? this.showRunPayroll(): console.log('not running payroll')}
+                {this.state.runningPayroll? this.renderPayrollModal(): console.log('not running payroll')}
+                {this.state.paying? this.showPayModal(this.state.payingAddress): console.log('not paying')}
 
                 {/* <EmployeeList className="employeeList"
                 account={this.state.account} 

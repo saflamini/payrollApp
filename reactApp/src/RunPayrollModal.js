@@ -13,7 +13,7 @@ class RunPayrollModal extends Component {
         return (
             <Container>
             <Modal show={true}>
-                <Modal.Header closeButton onClick={this.props.toggleRunningPayroll}>
+                <Modal.Header closeButton onClick={this.props.closePayrollModal}>
                   <Modal.Title>Run Payroll</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -22,7 +22,7 @@ class RunPayrollModal extends Component {
         </Modal.Body>
         <Modal.Footer>
         <Button variant="danger" onClick={this.props.runPayroll}>Run</Button> 
-        <Button className="goBack" variant="secondary" onClick={this.props.toggleRunningPayroll}>Cancel</Button>
+        <Button className="goBack" variant="secondary" onClick={this.props.closePayrollModal}>Cancel</Button>
         </Modal.Footer>
       </Modal>
       </Container>

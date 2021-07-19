@@ -234,10 +234,10 @@ else {
             <strong>Address</strong>: {this.state.employeeObject.address}
         </p>
         <p>
-            <strong>Salary</strong>: {this.state.employeeObject.salary} <Button size="sm" variant="secondary" onClick={this.salaryEdit}>Edit</Button>
+            <strong>Salary</strong>: {`$${this.state.employeeObject.salary} ${this.state.employeeObject.currency} per year`} <Button size="sm" variant="secondary" onClick={this.salaryEdit}>Edit</Button>
         </p>
         <p>
-            <strong>Payment Interval</strong>: {this.state.employeeObject.interval} <Button size="sm" variant="secondary" onClick={this.intervalEdit}>Edit</Button>
+            <strong>Payment Interval</strong>: {`Every ${this.state.employeeObject.interval} days`} <Button size="sm" variant="secondary" onClick={this.intervalEdit}>Edit</Button>
         </p>         
         <Button size="sm" variant="danger" onClick={this.deletingEmployee}>Delete</Button>
         </Modal.Body>

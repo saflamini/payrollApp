@@ -753,6 +753,26 @@ export const CompanyABI = [
     "constant": true
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "getLastDayPaid",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
     "inputs": [],
     "name": "getCompanyName",
     "outputs": [
@@ -877,7 +897,7 @@ export const CompanyABI = [
 export const web3 = new Web3(window.ethereum.currentProvider || "http://127.0.0.1:8545")
 
 //change this over time
-export const CompanyRegistryAddress = "0xd44e900018ed1d461953BD4aC931d3553338fB77";
+export const CompanyRegistryAddress = "0xb214dA3c27705b5A1DD39a4EaB3b92f988D47A2c";
 
 export const CompanyRegistry = new web3.eth.Contract(CompanyRegistryABI, CompanyRegistryAddress);
 

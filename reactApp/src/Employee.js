@@ -27,6 +27,7 @@ class Employee extends Component {
         this.handleChange = this.handleChange.bind(this);
         this.handlePayEmployee = this.handlePayEmployee.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
+        this.togglePayModal = this.togglePayModal.bind(this);
     }
 
     // nameEdit() {
@@ -63,6 +64,10 @@ class Employee extends Component {
     toggleModal() {
         this.props.handleEditing(this.props.address)
     }
+
+    togglePayModal() {
+        this.props.handlePaying(this.props.address)
+    }
        
 
     render() {
@@ -74,6 +79,7 @@ class Employee extends Component {
             address: this.props.address,
             salary: this.props.salary,
             interval: this.props.interval,
+            lastDayPaid: this.props.lastDayPaid,
             currencySymbol: this.props.currencySymbol
         }
 
@@ -83,9 +89,9 @@ class Employee extends Component {
             <tr>
                 <td>{employeeObject.address}</td>
                 {/* <td>{`${web3.utils.fromWei(employeeObject.salary.toString(), 'ether')} ${employeeObject.currencySymbol}`} </td> */}
-                <td>{`${employeeObject.salary} ${employeeObject.currencySymbol}`} </td>
-                <td>{`${(employeeObject.interval / 7).toFixed(2)} weeks`}</td>
-                <td>{this.state.paid?<Button variant="success" onClick={this.handlePayEmployee}>Pay</Button>
+                <td>{`$${employeeObject.salary} ${employeeObject.currencySymbol}`} </td>
+                <td>{`Every ${(employeeObject.interval / 7).toFixed(2)} weeks`}</td>
+                <td>{this.state.paid?<Button variant="success" onClick={this.togglePayModal}>Pay</Button>
                 :<Spinner animation="border" variant="success"></Spinner>}</td>
                 <td><Button variant="success" onClick={this.toggleModal}>Edit</Button></td>
             </tr>

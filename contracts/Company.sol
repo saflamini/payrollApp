@@ -157,6 +157,10 @@ contract Company is Ownable {
         return employees[_address].salary;
     }
 
+    function getLastDayPaid(address _address) public view returns (uint) {
+        return employees[_address].lastDayPaid;
+    }
+
 
      function getCompanyName() public view returns (string memory) {
         return name;
