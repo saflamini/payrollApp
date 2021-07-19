@@ -28,6 +28,7 @@ import FundPage from "./FundPage";
 import Home from "./Home";
 import {Route, Switch, Link} from "react-router-dom";
 import {BrowserRouter} from "react-router-dom";
+import ManageRoster from './ManageRoster';
 
 //need to run all state and key operations here
 //use router here to pass necessary prop values to other page components
@@ -416,14 +417,16 @@ class Web3Setup extends Component {
         
         return (
             <div>
-                {/* <Switch>
-                    <Route exact path="/balance" component={Balance}></Route>
-                </Switch> */}
+            
             <Navigation />
             <Container>
                 <Row>
                 <Col>
-                <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} createCompany={this.createCompany}/> 
+                <CompanyInfo 
+                account={this.state.account} 
+                company={this.state.company} 
+                getCompany={this.getCompany} 
+                createCompany={this.createCompany}/> 
                 </Col>
                 <Col>
                 {this.state.connected? 
@@ -433,8 +436,53 @@ class Web3Setup extends Component {
                 </Col>
                 </Row>
             </Container>
+
+            <Switch>
+                <Route exact path="/home" render={ () =>
+                    <Home
+                    account={this.state.account} 
+                    usdcBalance={this.state.usdcBalance} 
+                    daiBalance={this.state.daiBalance}
+                    usdtBalance={this.state.usdtBalance}
+                    fundPayroll={this.fundPayroll} 
+                    withdraw={this.withdrawFunds}
+                    companyAddress={this.state.account} 
+                    roster={this.state.roster}
+                    payEmployee={this.payEmployee}
+                    editingEmployee={this.editingEmployee} 
+                    companyContract={this.companyContract}
+                    runningPayroll={this.toggleRunningPayroll}
+                    />
+                    }>
+                </Route>
+                <Route exact path="/fund" render={ () => 
+                    <FundPage 
+                    account={this.state.account} 
+                    usdcBalance={this.state.usdcBalance} 
+                    daiBalance={this.state.daiBalance}
+                    usdtBalance={this.state.usdtBalance}
+                    fundPayroll={this.fundPayroll} 
+                    withdraw={this.withdrawFunds}
+                    />
+                    }>
+                </Route>
+                <Route exact path="/manage-roster" render={() =>
+                <ManageRoster
+                account={this.state.account} 
+                companyAddress={this.state.account} 
+                roster={this.state.roster}
+                payEmployee={this.payEmployee}
+                editingEmployee={this.editingEmployee} 
+                companyContract={this.state.companyContract}
+                runningPayroll={this.toggleRunningPayroll}
+                addEmployee={this.addEmployee}
+                />
+                }>
+                </Route>
+                
+            </Switch>
             
-                <Container className="top">
+                {/* <Container className="top">
                     <Row>
                         
                         <Col>
@@ -457,12 +505,13 @@ class Web3Setup extends Component {
                         </Card>
                         </Col>
                     </Row>
-                </Container>
+                </Container> */}
 
                 <Container>
                 {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
                 {this.state.runningPayroll? this.showRunPayroll(): console.log('not running payroll')}
-                <EmployeeList className="employeeList"
+
+                {/* <EmployeeList className="employeeList"
                 account={this.state.account} 
                 companyId={this.state.companyId} 
                 companyAddress={this.state.account} 
@@ -471,7 +520,7 @@ class Web3Setup extends Component {
                 editingEmployee={this.editingEmployee} 
                 companyContract={this.state.companyContract}
                 runningPayroll={this.toggleRunningPayroll}
-                />
+                /> */}
                 
                 </Container>
 

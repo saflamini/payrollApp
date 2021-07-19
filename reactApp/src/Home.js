@@ -1,8 +1,11 @@
 import React, { Component } from "react";
 import EmployeeList from "./EmployeeList";
 import Balance from "./Balance";
+import Navigation from "./Navigation";
 import Container from "react-bootstrap/esm/Container";
+import ConnectWallet from "./ConnectWallet";
 
+//still in testing - page does not work 
 
 
 class Home extends Component {
@@ -13,27 +16,28 @@ class Home extends Component {
     render() {
         return (
             <div>
-
-                        <Container bg="light">
-                        <Balance 
-                        account={this.state.account} 
-                        companyId={this.state.companyId} 
-                        usdcBalance={this.state.usdcBalance} 
-                        daiBalance={this.state.daiBalance}
-                        usdtBalance={this.state.usdtBalance}
-                        fundPayroll={this.fundPayroll} 
-                        withdraw={this.withdrawFunds}/>
-                        </Container>
-                 <EmployeeList className="employeeList"
-                account={this.state.account} 
-                companyId={this.state.companyId} 
-                companyAddress={this.state.account} 
-                roster={this.state.roster}
-                payEmployee={this.payEmployee}
-                editingEmployee={this.editingEmployee} 
-                companyContract={this.state.companyContract}
-                runningPayroll={this.toggleRunningPayroll}
-                />
+             {/* <Navigation/> */}
+                <Container bg="light">
+                    <Balance 
+                    account={this.props.account} 
+                    usdcBalance={this.props.usdcBalance} 
+                    daiBalance={this.props.daiBalance}
+                    usdtBalance={this.props.usdtBalance}
+                    fundPayroll={this.props.fundPayroll} 
+                    withdraw={this.props.withdrawFunds}
+                    />
+                </Container>
+                <Container>
+                    <EmployeeList className="employeeList"
+                    account={this.props.account} 
+                    companyAddress={this.props.account} 
+                    roster={this.props.roster}
+                    payEmployee={this.props.payEmployee}
+                    editingEmployee={this.props.editingEmployee} 
+                    companyContract={this.props.companyContract}
+                    runningPayroll={this.props.toggleRunningPayroll}
+                    />
+                </Container>
             </div>
         )
     }

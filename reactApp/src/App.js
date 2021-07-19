@@ -9,7 +9,7 @@ import ConnectWallet from './ConnectWallet'
 function App() {
   return (
     <div className="App">
-      <Switch>
+      {/* <Switch>
         <Route 
         exact 
         path="/home" 
@@ -17,11 +17,11 @@ function App() {
         ></Route>
         <Route exact path="/" component={Web3Setup}></Route>
         <Route exact path="/fund" component={FundPage}></Route>
-        </Switch>
+        </Switch> */}
 
-        {/* <BrowserRouter>
+        <BrowserRouter>
           <Web3Setup />
-        </BrowserRouter> */}
+        </BrowserRouter>
       
     </div>
   );

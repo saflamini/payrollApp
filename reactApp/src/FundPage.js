@@ -14,10 +14,15 @@ class FundPage extends Component {
     render() {
         return (
             <Container>
-                <Navigation />
-                <ConnectWallet />
-                <Balance />
-             
+                {/* <Navigation />
+                <ConnectWallet /> */}
+                <Balance 
+                 account={this.props.account} 
+                 usdcBalance={this.props.usdcBalance} 
+                 daiBalance={this.props.daiBalance}
+                 usdtBalance={this.props.usdtBalance}
+                 fundPayroll={this.props.fundPayroll} 
+                 withdraw={this.props.withdraw}/>
             </Container>
 
         )

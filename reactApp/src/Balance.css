@@ -1,17 +1,27 @@
 .addFunds {
+    width: 100%;
+    padding: 2%;
     margin-top: 5%;
-    
-    /* padding: 3%; */
 }
 
 .balance {
     display: grid;
     align-items: flex-start;
+    margin-top: 5%;
   
     /* padding: 3%; */
 }
 
 .withdrawFunds {
+    width: 100%;
+    margin-top: 1%;
+    padding: 2%;
+}
+
+.pie-chart {
+    width: 70%;
+    height: 80%;
+    margin-left: 5%;
     margin-top: 5%;
-    /* padding: 3%; */
+    padding-bottom: 20%;
 }

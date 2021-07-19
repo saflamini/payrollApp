@@ -6,6 +6,11 @@ import {decimals} from "./config";
 import "./Balance.css";
 import Card from 'react-bootstrap/esm/Card';
 import Container from 'react-bootstrap/esm/Container';
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import * as V from 'victory';
+import {VictoryPie} from 'victory';
+import {Pie} from 'react-chartjs-2';
 import Button from 'react-bootstrap/esm/Button';
 
 
@@ -52,11 +57,13 @@ class Balance extends Component {
         //new BigNumber(this.state.funding).shiftedBy(decimals[this.state.currency]
         return (
             <Container>
+                <Row>
+                <Col>
                 <Card bg="light" className="balance">
                 <h2>Your Balances</h2>
-                <h5>{`${new BigNumber(this.props.usdcBalance).shiftedBy(-1 * (decimals['USDC'])).toFixed(2)} usdc`}</h5> 
-                <h5>{`${new BigNumber(this.props.daiBalance).shiftedBy(-1 * (decimals['DAI'])).toFixed(2)} dai`}</h5>
-                <h5>{`${new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)} usdt`}</h5>
+                <h5>{`$${new BigNumber(this.props.usdcBalance).shiftedBy(-1 * (decimals['USDC'])).toFixed(2)} usdc`}</h5> 
+                <h5>{`$${new BigNumber(this.props.daiBalance).shiftedBy(-1 * (decimals['DAI'])).toFixed(2)} dai`}</h5>
+                <h5>{`$${new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)} usdt`}</h5>
                 </Card>
                 <Card bg="light" className="addFunds">
                 {this.state.addingFunds ? <Fund funding={this.fundPayroll}/>
@@ -66,6 +73,37 @@ class Balance extends Component {
                 <Card bg="light" className="withdrawFunds">
                     <Withdraw withdraw={this.withdraw}/>
                 </Card>
+                
+                </Col>
+                <Col>
+                <Card bg="light" className="pie-chart">
+                <h3>Total Funding</h3>
+                <Pie className="pie"
+                data={{
+                    labels: ["DAI", "USDC", "USDT"],
+                    datasets: [
+                    {
+                    label: 'Funding Breakdown',
+                    data: [
+                        new BigNumber(this.props.usdcBalance).shiftedBy(-1 * (decimals['USDC'])).toFixed(2),
+                        new BigNumber(this.props.daiBalance).shiftedBy(-1 * (decimals['DAI'])).toFixed(2),
+                        new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)
+                    ],
+                    backgroundColor: [
+                        "blue", "orange", "green"
+                    ]
+                }]
+                }}
+                />
+               
+                </Card>
+                </Col>
+
+                </Row>
+                
+                
+                
+                
             </Container>
         )
     }

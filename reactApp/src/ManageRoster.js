@@ -1,4 +1,9 @@
 import React, {Component} from "react";
+import EmployeeList from "./EmployeeList";
+import Navigation from "./Navigation";
+import EmployeeForm from "./EmployeeForm";
+import Card from "react-bootstrap/Card"
+import "./EmployeeList.css";
 
 class ManageRoster extends Component {
     constructor(props) {
@@ -8,7 +13,22 @@ class ManageRoster extends Component {
     render() {
         return (
             <div>
-
+            {/* <Navigation /> */}
+            <Card  className="employeeForm" bg="light">
+                    <Card.Header><h3>Add a New Employee</h3></Card.Header>
+                    <EmployeeForm 
+                        addEmployee={this.props.addEmployee}/>
+                    </Card>
+                <EmployeeList 
+                className="employeeList"
+                account={this.props.account} 
+                companyAddress={this.props.account} 
+                roster={this.props.roster}
+                payEmployee={this.props.payEmployee}
+                editingEmployee={this.props.editingEmployee} 
+                companyContract={this.props.companyContract}
+                runningPayroll={this.props.toggleRunningPayroll}
+                />
             </div>
         )
     }
