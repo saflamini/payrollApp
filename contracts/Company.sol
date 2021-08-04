@@ -166,6 +166,10 @@ contract Company is Ownable {
         return name;
     }
 
+    function getCompanyId() public view returns (uint) {
+        return companyId;
+    }
+
     // not needed, can use standard ERC20 procedures to get this
     function getCompanyBalance(address _tokenAddress) public view returns (uint) {
         return erc20Balances[_tokenAddress];

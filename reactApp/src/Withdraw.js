@@ -7,6 +7,7 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
+import "./Withdraw.css"
 
 class Withdraw extends Component {
     constructor(props) {
@@ -52,7 +53,7 @@ class Withdraw extends Component {
                         <Dropdown.Item onClick={() => this.handleClick('DAI')}>DAI</Dropdown.Item>
                         <Dropdown.Item onClick={() => this.handleClick('USDT')}>USDT</Dropdown.Item>
                     </DropdownButton>
-                    <Button type="submit" variant="success" size="sm" >Submit</Button>
+                    <Button type="submit" className="withdraw" size="sm" >Submit</Button>
                 </InputGroup>
             </Form>
             </div>

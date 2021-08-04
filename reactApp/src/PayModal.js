@@ -4,8 +4,8 @@ import Modal from "react-bootstrap/Modal";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
-import {assets, decimals, assetSymbols} from "./config";
-import { BigNumber } from "bignumber.js";
+// import {assets, decimals, assetSymbols} from "./config";
+// import { BigNumber } from "bignumber.js";
 
 class PayModal extends Component {
     constructor(props) {
@@ -36,6 +36,7 @@ class PayModal extends Component {
 
     pay(evt) {
         evt.preventDefault();
+        console.log(this.state.employeeObject.address)
         this.setState({paid: false})
         setTimeout(() => {
             this.props.payEmployee(this.state.employeeObject.address)
@@ -58,7 +59,7 @@ class PayModal extends Component {
         
                 return (
                 <Container>
-                     <Modal show={true}>
+                     <Modal show={true} onHide={this.props.closePayModal}>
                             <Modal.Header closeButton onClick={this.props.closePayModal}>
                               <Modal.Title>Pay Employee</Modal.Title>
                             </Modal.Header>
@@ -88,15 +89,15 @@ class PayModal extends Component {
                             <Form.Label htmlFor="oneOffPayment"><strong>Send One Off Payment: </strong> </Form.Label>
                             <Form.Control type="text" name="oneOffPayment" placeholder="Enter a value here in USD..."value={this.state.oneOffPayment} onChange={this.handleChange}></Form.Control>
                         </Form.Group>
-                        {this.state.paidOneOff? <Button variant="success" onClick={this.sendOneOff}>Send One Off Payment</Button>
-                        :<Spinner animation="border" variant="success"></Spinner>}
+                        {this.state.paidOneOff? <Button variant="primary" onClick={this.sendOneOff}>Send One Off Payment</Button>
+                        :<Spinner animation="border" variant="primary"></Spinner>}
                         
                     </Form>
                       
                     </Modal.Body>
                     <Modal.Footer>
                         {this.state.paid? <Button onClick={this.pay}>Pay Employee</Button>
-                        :<Spinner animation="border" variant="success"></Spinner>}
+                        :<Spinner animation="border" variant="primary"></Spinner>}
                       <Button variant="secondary" onClick={this.props.closePayModal}>
                         Close
                       </Button>

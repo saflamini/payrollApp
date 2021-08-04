@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import { web3 } from './config';
+// import { web3 } from './config';
 import { assets } from "./config";
 import { BigNumber } from "bignumber.js";
 import { decimals } from "./config";
@@ -8,6 +8,7 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
+import "./Fund.css"
 
 
 
@@ -31,7 +32,6 @@ class Fund extends Component {
 
     handleSubmit(evt) {
         evt.preventDefault();
-        console.log(this.state.currency)
         this.props.funding(new BigNumber(this.state.funding).shiftedBy(decimals[this.state.currency]), assets[this.state.currency]);
         this.setState({funding: ""})
     }
@@ -55,7 +55,7 @@ class Fund extends Component {
                         <Dropdown.Item onClick={() => this.handleClick('DAI')}>DAI</Dropdown.Item>
                         <Dropdown.Item onClick={() => this.handleClick('USDT')}>USDT</Dropdown.Item>
                     </DropdownButton>
-                    <Button type="submit" variant="success" size="sm" >Submit</Button>
+                    <Button type="submit" className="add-button" size="sm" >Submit</Button>
                 </InputGroup>
             </Form>
             </div>

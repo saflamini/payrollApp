@@ -1,0 +1,14 @@
+.nav-bar {
+    background-color: blue;
+    border: 1px solid blue;
+    border-radius: 1%;
+    color: white;
+}
+
+.nav-item {
+    color: #FFFFFF;
+}
+
+.nav {
+    color: #FFFFFF;
+}

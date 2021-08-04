@@ -132,7 +132,7 @@ if (this.state.salaryEditing) {
     salaryDisplay = (
 
         <Container>
-            <Modal show={true}>
+            <Modal show={true} onHide={this.props.closeEditModal}>
                 <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
@@ -143,7 +143,7 @@ if (this.state.salaryEditing) {
                     <Form.Label htmlFor="salaryEdit">Edit Salary </Form.Label>
                     <Form.Control type="text" name="salary" value={this.state.salary} onChange={this.handleChange}></Form.Control>
                 </Form.Group>
-                <Button variant="success" onClick={this.updateSal}>Done</Button>
+                <Button variant="primary" onClick={this.updateSal}>Done</Button>
                 <Button className="goBack" variant="secondary" onClick={this.salaryEdit}>Cancel</Button>
             </Form>
         </Modal.Body>
@@ -164,7 +164,7 @@ if (this.state.intervalEditing) {
     intervalDisplay = (
 
         <Container>
-            <Modal show={true}>
+            <Modal show={true} onHide={this.props.closeEditModal}>
                 <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
@@ -174,7 +174,7 @@ if (this.state.intervalEditing) {
                     <Form.Label htmlFor="intervalEdit">Edit Interval </Form.Label>
                     <Form.Control type="text" name="interval" value={this.state.interval} onChange={this.handleChange}></Form.Control>
                 </Form.Group>
-                <Button variant="success" onClick={this.updateInt}>Done</Button> 
+                <Button variant="primary" onClick={this.updateInt}>Done</Button> 
                 <Button className="goBack" variant="secondary" onClick={this.intervalEdit}>Cancel</Button>
             </Form>
         </Modal.Body>
@@ -194,7 +194,7 @@ if (this.state.deleting) {
     deletionDisplay = (
 
         <Container>
-            <Modal show={true}>
+            <Modal show={true} onHide={this.props.closeEditModal}>
                 <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
@@ -225,7 +225,7 @@ if (this.state.deleting) {
 else {
     return (
     <Container>
-         <Modal show={true}>
+         <Modal show={true} onHide={this.props.closeEditModal}>
                 <Modal.Header closeButton onClick={this.props.closeEditModal}>
                   <Modal.Title>Edit Employee Info</Modal.Title>
                 </Modal.Header>
@@ -245,7 +245,7 @@ else {
           <Button variant="secondary" onClick={this.props.closeEditModal}>
             Close
           </Button>
-          <Button onClick={this.sendUpdate} variant="success">
+          <Button onClick={this.sendUpdate} variant="primary">
             Save Changes
           </Button>
         </Modal.Footer>

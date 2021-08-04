@@ -15,7 +15,8 @@ import Card from 'react-bootstrap/Card';
 import { assetSymbols, decimals } from "./config";
 import Button from 'react-bootstrap/esm/Button';
 // import EditModal from './EditModal';
-import { BigNumber } from "bignumber.js";
+import "./EmployeeList.css";
+// import { BigNumber } from "bignumber.js";
 
 
 
@@ -151,8 +152,12 @@ class EmployeeList extends Component {
         return (
             this.props.roster.map(employee => (
                 <tbody key={employee.address + this.props.companyId}>{
-                    <Employee 
-                    // name={employee.name}
+                    <Employee className="e"
+                    first_name={employee.first_name}
+                    last_name={employee.last_name}
+                    filingstatus={employee.filingstatus}
+                    state={employee.state}
+                    allowances={employee.allowances}
                     address={employee.address}
                     account={this.props.account}
                     salary={employee.salary}
@@ -196,20 +201,21 @@ class EmployeeList extends Component {
             <div className="employeeList">
                 <Container>
                     <Row>
-                        <Card className="employeeListTitle" bg="light">
+                        <Card className="employeeListTitle" >
                         <h3>Employee Roster</h3>
                         </Card>
                         <Button
-                        variant="success" className="run-payroll" onClick={this.run}>
+                        className="run-payroll" onClick={this.run}>
                             Run Payroll
                         </Button>
                         <Button
-                        variant="primary" className="add-employee" onClick={this.toggleAddEmployee}>
+                         className="add-employee" variant="primary" onClick={this.toggleAddEmployee}>
                             Add New Employee
                         </Button>
-                        <Table responsive striped bordered hover bg="light">
+                        <Table className="employees"responsive bordered hover>
                         <thead>
                             <tr>
+                            <th>Name</th>
                             <th>Employee Address</th>
                             <th>Annual Salary</th>
                             <th>Interval</th>

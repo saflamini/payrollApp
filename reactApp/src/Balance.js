@@ -8,8 +8,7 @@ import Card from 'react-bootstrap/esm/Card';
 import Container from 'react-bootstrap/esm/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import * as V from 'victory';
-import {VictoryPie} from 'victory';
+
 import {Pie} from 'react-chartjs-2';
 import Button from 'react-bootstrap/esm/Button';
 
@@ -59,24 +58,29 @@ class Balance extends Component {
             <Container>
                 <Row>
                 <Col>
-                <Card bg="light" className="balance">
+                <Card bg="#FFFFFF" className="balance">
                 <h2>Your Balances</h2>
-                <h5>{`$${new BigNumber(this.props.usdcBalance).shiftedBy(-1 * (decimals['USDC'])).toFixed(2)} usdc`}</h5> 
-                <h5>{`$${new BigNumber(this.props.daiBalance).shiftedBy(-1 * (decimals['DAI'])).toFixed(2)} dai`}</h5>
-                <h5>{`$${new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)} usdt`}</h5>
+                <h5>{this.props.usdcBalance == 0? '$0.00 USDC'
+                :`$${new BigNumber(this.props.usdcBalance).shiftedBy(-1 * (decimals['USDC'])).toFixed(2)} USDC`}</h5> 
+
+                <h5>{this.props.daiBalance == 0? '$0.00 DAI'
+                :`$${new BigNumber(this.props.daiBalance).shiftedBy(-1 * (decimals['DAI'])).toFixed(2)} DAI`}</h5>
+
+                <h5>{this.props.usdtBalance == 0? "$0.00 USDT"
+                :`$${new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)} USDT`}</h5>
                 </Card>
-                <Card bg="light" className="addFunds">
+                <Card className="addFunds">
                 {this.state.addingFunds ? <Fund funding={this.fundPayroll}/>
-                :<Button size="sm" variant="success" onClick={this.handleClick}>Add Funding</Button>
+                :<Button size="sm" className="add-button" onClick={this.handleClick}>Add Funding</Button>
                 }
                 </Card>
-                <Card bg="light" className="withdrawFunds">
+                <Card className="withdrawFunds">
                     <Withdraw withdraw={this.withdraw}/>
                 </Card>
                 
                 </Col>
                 <Col>
-                <Card bg="light" className="pie-chart">
+                <Card className="pie-chart">
                 <h3>Total Funding</h3>
                 <Pie className="pie"
                 data={{
@@ -90,7 +94,7 @@ class Balance extends Component {
                         new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)
                     ],
                     backgroundColor: [
-                        "blue", "orange", "green"
+                        "#2774CA", "#FDC034", "#4FAF95"
                     ]
                 }]
                 }}

@@ -17,6 +17,14 @@ class CompanyForm extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
+    componentDidMount() {
+        
+    }
+
+    componentWillUnmount() {
+        
+    }
+
     handleChange(evt) {
         this.setState({
             [evt.target.name]: evt.target.value
@@ -37,7 +45,7 @@ class CompanyForm extends Component {
                     <Form.Label htmlFor="companyName">Company Name: </Form.Label>
                     <InputGroup>
                     <Form.Control name="companyName" type="text" value={this.state.companyName} onChange={this.handleChange}></Form.Control>
-                    <Button onClick={this.handleSubmit}variant="success" >Create Company</Button>
+                    <Button onClick={this.handleSubmit}variant="primary" >Create Company</Button>
                     </InputGroup>
                 </Form>
             </Container>

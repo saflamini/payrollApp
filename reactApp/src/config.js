@@ -787,6 +787,20 @@ export const CompanyABI = [
     "constant": true
   },
   {
+    "inputs": [],
+    "name": "getCompanyId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -897,7 +911,7 @@ export const CompanyABI = [
 export const web3 = new Web3(window.ethereum.currentProvider || "http://127.0.0.1:8545")
 
 //change this over time
-export const CompanyRegistryAddress = "0xb214dA3c27705b5A1DD39a4EaB3b92f988D47A2c";
+export const CompanyRegistryAddress = "0xE3B63D58C03e610340522b205006f6Ea0B85bf55";
 
 export const CompanyRegistry = new web3.eth.Contract(CompanyRegistryABI, CompanyRegistryAddress);
 
@@ -921,3 +935,13 @@ export const decimals = {
 
 //ganache-cli --fork https://mainnet.infura.io/v3/09026dadca7744ea9d976f85b2a9723e --unlock 0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503
 //second account to unlock or include, public key: 0x29a95458f5af3C67faFD985E9f2C16365Dd72203 private key: 0x04dc975a543e55544b76359f12ba94080dead13e2755fa81d0dd126a118af829
+
+//export PATH="/Applications/Postgres.app/Contents/Versions/12/bin:$PATH"
+
+// (7) 0xb7d79304f9d3204ae3734c439bfd43b21b9ea0d0146733396ee35525a8b137dc
+// (8) 0xec665ebf98b323cb9269a56f5dcd80c04066777fead10b02833d1713eded5a7b
+// (9) 0x16df65211d50164ef1f3027ed0a3af69379e4f0415deebe762fab70d27a59e70
+
+// (7) 0x8ddD97602a5C6Cb96b9E85560557D7540cE2F0B8 (100 ETH)
+// (8) 0xF416baF3819c33fB8a921bDd3B785e25EC3fbFC1 (100 ETH)
+// (9) 0xB6F22FACa0b3509110F6012cb4D121DbFE3CEC16 (100 ETH)

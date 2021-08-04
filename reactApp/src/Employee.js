@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
-import { web3 } from './config';
-import { BigNumber } from "bignumber.js";
+// import { web3 } from './config';
+// import { BigNumber } from "bignumber.js";
 
 
 
@@ -75,7 +75,11 @@ class Employee extends Component {
         
 
         const employeeObject = {
-            // name: this.props.name,
+            first_name: this.props.first_name,
+            last_name: this.props.last_name,
+            state: this.props.state,
+            filingstatus: this.props.filingstatus,
+            allowances: this.props.allowances,
             address: this.props.address,
             salary: this.props.salary,
             interval: this.props.interval,
@@ -87,13 +91,16 @@ class Employee extends Component {
             result = (
       
             <tr>
+                <td>
+                    <a href={`/manage-roster/${employeeObject.address}`} >{`${employeeObject.first_name} ${employeeObject.last_name}`}</a>
+                </td>
                 <td>{employeeObject.address}</td>
                 {/* <td>{`${web3.utils.fromWei(employeeObject.salary.toString(), 'ether')} ${employeeObject.currencySymbol}`} </td> */}
                 <td>{`$${employeeObject.salary} ${employeeObject.currencySymbol}`} </td>
                 <td>{`Every ${(employeeObject.interval / 7).toFixed(2)} weeks`}</td>
-                <td>{this.state.paid?<Button variant="success" onClick={this.togglePayModal}>Pay</Button>
-                :<Spinner animation="border" variant="success"></Spinner>}</td>
-                <td><Button variant="success" onClick={this.toggleModal}>Edit</Button></td>
+                <td>{this.state.paid?<Button variant="primary" onClick={this.togglePayModal}>Pay</Button>
+                :<Spinner animation="border" variant="primary"></Spinner>}</td>
+                <td><Button variant="primary" onClick={this.toggleModal}>Edit</Button></td>
             </tr>
                
 

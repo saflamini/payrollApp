@@ -21,7 +21,7 @@ class ConnectWallet extends Component {
 
     render() {
         return (
-            <Button variant="success" onClick={this.enableWallet} className="connectWallet">Connect Wallet</Button>
+            <Button variant="primary" onClick={this.enableWallet} className="connectWallet">Connect Wallet</Button>
         )
     }
 }

@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import Container from "react-bootstrap/Container";
+import "./Navigation.css"
 
 class Navigation extends Component {
     constructor(props) {
@@ -13,13 +14,13 @@ class Navigation extends Component {
             <Container>
                 <Navbar>
                     <Container>
-                        <Navbar.Brand href="#home">OpenPay</Navbar.Brand>
-                        <Nav className="me-auto">
-                            <Nav.Link href="/home">Home</Nav.Link>
-                            <Nav.Link href="/fund">Fund</Nav.Link>
-                            <Nav.Link href="/manage-roster">Manage Roster</Nav.Link>
-                            <Nav.Link href="/hr-compliance">HR and Compliance</Nav.Link>
-                            <Nav.Link href="/analytics">Analytics</Nav.Link>
+                        <Navbar.Brand className="nav" href="#home">Tx Payroll</Navbar.Brand>
+                        <Nav className="navbar-light">
+                            <Nav.Link  href="/home" variant="tabs">Home</Nav.Link>
+                            <Nav.Link className="nav-item" href="/fund">Fund</Nav.Link>
+                            <Nav.Link className="nav-item" href="/manage-roster">Manage Roster</Nav.Link>
+                            <Nav.Link className="nav-item" href="/payments">Payments</Nav.Link>
+                            <Nav.Link className="nav-item" href="/analytics">Analytics</Nav.Link>
                         </Nav>
                     </Container>
                 </Navbar>

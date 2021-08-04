@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import EmployeeList from "./EmployeeList";
 import Balance from "./Balance";
-import Navigation from "./Navigation";
+// import Navigation from "./Navigation";
 import Container from "react-bootstrap/esm/Container";
-import ConnectWallet from "./ConnectWallet";
+// import ConnectWallet from "./ConnectWallet";
 import './Home.css'
 //still in testing - page does not work 
 

@@ -2,12 +2,18 @@
     width: 100%;
     padding: 2%;
     margin-top: 5%;
+    background: #FFFFFF;
+}
+
+.add-button {
+    background: blue;
 }
 
 .balance {
     display: grid;
     align-items: flex-start;
     margin-top: 5%;
+    background: #FFFFFF;
   
     /* padding: 3%; */
 }
@@ -16,6 +22,7 @@
     width: 100%;
     margin-top: 1%;
     padding: 2%;
+    background: #FFFFFF;
 }
 
 .pie-chart {
@@ -24,4 +31,9 @@
     margin-left: 5%;
     margin-top: 5%;
     padding-bottom: 20%;
+    background: #FFFFFF;
+}
+
+body {
+    font-family: 'Archivo', Bold 700;
 }

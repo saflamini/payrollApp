@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  font-family: 'Archivo', Bold 700;
 }
 
 .App-logo {
@@ -42,5 +43,6 @@ body {
     background-color: #FAF9F6;
   /* background-image: linear-gradient(147deg, #000000 0%, #434343 74%); */
 }
+
 
 
