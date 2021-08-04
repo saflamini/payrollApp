@@ -1,0 +1,13 @@
+.companyName {
+    color: black;
+}
+
+.companyInfo {
+    display: flex;
+    width: fit-content;
+    padding-top: 1%;
+    padding-left: 5%;
+    padding-right: 5%;
+    background: blue;
+    color: #FFFFFF;
+}

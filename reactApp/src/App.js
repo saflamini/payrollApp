@@ -1,12 +1,19 @@
 import './App.css';
+// import {Route, Switch, Link} from "react-router-dom";
+import {BrowserRouter} from "react-router-dom";
 import Web3Setup from './Web3Setup';
-import CompanyForm from "./CompanyForm";
+// import FundPage from './FundPage';
+// import ConnectWallet from './ConnectWallet'
 
 
 function App() {
   return (
     <div className="App">
-      <Web3Setup />
+     
+        <BrowserRouter>
+          <Web3Setup />
+        </BrowserRouter>
+      
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import React, {Component} from "react";
-import { web3 } from './config';
-import { payrollAddress } from './config'; 
-import { payrollContract } from './config';
+// import { CompanyRegistry } from './config';
 import CompanyForm from "./CompanyForm";
+import "./CompanyInfo.css"
+import Card from "react-bootstrap/Card";
+// import Container from "react-bootstrap/Container";
 
 //create company info component
 
@@ -22,30 +23,37 @@ class CompanyInfo extends Component {
     //     // })      
     // }
    
-    createCompany(name) {
-        payrollContract.methods.createCompany(name).send({from: this.props.account, gas: 6721975})
-        .then(console.log)
+    async createCompany(name) {
+        this.props.createCompany(name);
+        // await CompanyRegistry.methods.createCompany(name).send({from: this.props.account, gas: 6721975})
+        // .then(console.log)
     }
 
+    //this is likely not needed
    async getCompany() {
-        let co = await payrollContract.methods.getCompany(this.props.account).call({from: this.props.account});
-        this.setState({
-            company: co
-        })       
+       this.props.getCompany();
+        // let co = await CompanyRegistry.methods.getCompanyAddress(this.props.account).call({from: this.props.account});
+        //state is not handled here, going to comment out
+        // this.setState({
+        //     company: co
+        // })       
     }
 
     render() {
 
         return (
-            <div>
-                {this.props.company === "Please create a new company or connect a wallet"?
+            <Card className="companyInfo">
+                {this.props.company !== "Please create a new company or connect a wallet"?
+                <h4>{this.props.company}</h4>
+                :
                 <CompanyForm 
                 createCompany={this.createCompany} 
-                />:<h1>{this.props.company}</h1>
+                />
+                
                 }
                 {/* <h3>Company Address: {this.props.account}</h3> */}
                 {/* <button onClick={this.getCompany}>Get Company</button> */}
-            </div>
+                </Card>
         )
     }
 }

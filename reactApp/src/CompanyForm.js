@@ -3,6 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
+import "./CompanyForm.css";
 
 
 class CompanyForm extends Component {
@@ -14,6 +15,14 @@ class CompanyForm extends Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    componentDidMount() {
+        
+    }
+
+    componentWillUnmount() {
+        
     }
 
     handleChange(evt) {
@@ -30,13 +39,13 @@ class CompanyForm extends Component {
 
     render() {
         return (
-            <Container>
+            <Container className="coForm">
                 <h3>Create Company</h3>
                 <Form >
                     <Form.Label htmlFor="companyName">Company Name: </Form.Label>
                     <InputGroup>
                     <Form.Control name="companyName" type="text" value={this.state.companyName} onChange={this.handleChange}></Form.Control>
-                    <Button onClick={this.handleSubmit}variant="success" >Create Company</Button>
+                    <Button onClick={this.handleSubmit}variant="primary" >Create Company</Button>
                     </InputGroup>
                 </Form>
             </Container>

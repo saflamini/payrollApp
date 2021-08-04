@@ -2,26 +2,35 @@
     position:absolute;
     top:0;
     right:0;
-    color:#FFFFFF;
+    color: #FFFFFF;
     padding: 5px;
     border-radius: 3%;
     margin: .25%;
+    background-color: blue;
+}
+
+.nav {
+    color: white;
 }
 
 body {
-    background-color: #121212;
+    background-color: light;
 }
 
 .top {
     margin-top: 5%;
-    color: #FFFFFF;
+    /* color: white; */
 }
 
 .employeeList {
-    color: #FFFFFF;
-    margin-top: 2%;
+    /* color: black; */
+    margin-top: 1%;
 }
 
 .employeeForm {
     padding: 2%;
+}
+
+.companyInfo {
+    margin-top: 2%;
 }

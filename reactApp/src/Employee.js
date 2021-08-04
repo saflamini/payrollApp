@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
-import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import EditModal from './EditModal';
-import { web3 } from './config';
+import Spinner from 'react-bootstrap/Spinner';
+// import { web3 } from './config';
+// import { BigNumber } from "bignumber.js";
+
 
 
 class Employee extends Component {
@@ -12,37 +13,27 @@ class Employee extends Component {
             nameEditing: false,
             salaryEditing: false,
             intervalEditing: false,
-            name: '',
+            // name: '',
             salary: '',
             interval: '',
-            editingAddress: ''
+            editingAddress: '',
+            currencyAddress: '',
+            currencySymbol: '',
+            paid: true
         }
 
-        this.nameEdit = this.nameEdit.bind(this);
-        // this.salaryEdit = this.salaryEdit.bind(this);
-        // this.intervalEdit = this.intervalEdit.bind(this);
-        this.handleNameUpdate = this.handleNameUpdate.bind(this);
-        // this.handleSalaryUpdate = this.handleSalaryUpdate.bind(this);
-        // this.handleIntervalUpdate = this.handleIntervalUpdate.bind(this);
+        // this.nameEdit = this.nameEdit.bind(this);
+        // this.handleNameUpdate = this.handleNameUpdate.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handlePayEmployee = this.handlePayEmployee.bind(this);
-        // this.handleDeleteEmployee = this.handleDeleteEmployee.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
+        this.togglePayModal = this.togglePayModal.bind(this);
     }
 
-    nameEdit() {
-        this.setState({nameEditing: !this.state.nameEditing})
-    }
-
-    // salaryEdit() {
-    //     this.setState({salaryEditing: !this.state.salaryEditing})
+    // nameEdit() {
+    //     this.setState({nameEditing: !this.state.nameEditing})
     // }
 
-    // intervalEdit() {
-    //     this.setState({intervalEditing: !this.state.intervalEditing})
-    // }
-
-    //define and bind these 3 methods that edit employee info 
    
     handleNameUpdate(evt) {
         evt.preventDefault();
@@ -50,28 +41,19 @@ class Employee extends Component {
         this.setState({nameEditing: false})
     }
 
-    // handleSalaryUpdate(evt) {
-    //     evt.preventDefault();
-    //     this.props.updateSalary(this.props.address, this.props.companyId, this.state.salary);
-    //     this.setState({salaryEditing: false})
-    // }
-
-    // handleIntervalUpdate(evt) {
-    //     evt.preventDefault();
-    //     this.props.updateInterval(this.props.address, this.props.companyId, this.state.interval);
-    //     this.setState({intervalEditing: false})
-    // }
 
     handlePayEmployee(evt) {
         evt.preventDefault();
-        this.props.payEmployee(this.props.address, this.props.companyId);
-        //add in a loader while payment goes through and a signal that it was indeed processed
+        this.setState({paid: false})
+        setTimeout(() => {
+            this.props.payEmployee(this.props.address)
+            .then(console.log())
+            .then(this.setState({paid: true}))
+        }, 2000);
     }
+        //add in a loader while payment goes through and a signal that it was indeed processed
+    
 
-    // handleDeleteEmployee(evt) {
-    //     evt.preventDefault();
-    //     this.props.removeEmployee(this.props.address, this.props.companyId);
-    // }
 
     handleChange(evt) {
         this.setState({
@@ -80,7 +62,11 @@ class Employee extends Component {
     }
 
     toggleModal() {
-        this.props.handleEditing(this.props.address, this.props.companyId)
+        this.props.handleEditing(this.props.address)
+    }
+
+    togglePayModal() {
+        this.props.handlePaying(this.props.address)
     }
        
 
@@ -89,86 +75,32 @@ class Employee extends Component {
         
 
         const employeeObject = {
-            // name: this.props.name,
+            first_name: this.props.first_name,
+            last_name: this.props.last_name,
+            state: this.props.state,
+            filingstatus: this.props.filingstatus,
+            allowances: this.props.allowances,
             address: this.props.address,
             salary: this.props.salary,
-            interval: this.props.interval
+            interval: this.props.interval,
+            lastDayPaid: this.props.lastDayPaid,
+            currencySymbol: this.props.currencySymbol
         }
 
-        //we should probably pass the editing state up to either employeelist or web3 setup 
-        //and render the modal + handle actions there
-        // if (this.state.editing) {
-        // return (
-        // <div>
-        // <EditModal show={true}/>
-        // </div>
-        // )}
-    
-        // if (this.state.nameEditing) {
-        //     // let nameDisplay;
-        //     // nameDisplay = (
-        //     //     <div>
-        //     //         <form onSubmit={this.handleNameUpdate}>
-        //     //             <label htmlFor="name">Name </label>
-        //     //             <input type="text" name="name" value={this.state.name} onChange={this.handleChange}></input> 
-        //     //             <button >✅</button>
-        //     //         </form>
-        //     //     </div>
-        //     // )
-        //     // return nameDisplay
-        // }
-
-        // if (this.state.salaryEditing) {
-        //     let salaryDisplay;
-        //     salaryDisplay = (
-        //         <div>
-        //             <form onSubmit={this.handleSalaryUpdate}>
-        //                 <label htmlFor="salary">Salary </label>
-        //                 <input type="text" name="salary" value={this.state.salary} onChange={this.handleChange}></input> 
-        //                 <button>✅</button>
-        //             </form>
-        //         </div>
-        //     )
-        //     return salaryDisplay;
-        // }
-
-        // if (this.state.intervalEditing) {
-        //     let intervalDisplay;
-        //     intervalDisplay = (
-        //         <div>
-        //             <form onSubmit={this.handleIntervalUpdate}>
-        //                 <label htmlFor="interval">Interval </label>
-        //                 <input type="text" name="interval" value={this.state.interval} onChange={this.handleChange}></input> 
-        //                 <button>✅</button>
-        //             </form>
-        //         </div>
-        //     )
-        //     return intervalDisplay;
-        // }
-
-        // else {
             let result;
             result = (
-            // <div>
-            //      <p>
-            //     <strong>Address</strong>: {employeeObject.address} <button onClick={this.salaryEdit}>🖊</button>
-            //     </p>
-            //     <p>
-            //     <strong>Salary</strong>: {employeeObject.salary} <button onClick={this.salaryEdit}>🖊</button>
-            //     </p>
-            //     <p>
-            //     <strong>Payment Interval</strong>: {employeeObject.interval} <button onClick={this.intervalEdit}>🖊</button>
-            //     </p>
-            //     <button onClick={this.handlePayEmployee}>Pay</button>           
-            //     <button onClick={this.handleDeleteEmployee}>Delete</button>
-            //     </div>
       
             <tr>
+                <td>
+                    <a href={`/manage-roster/${employeeObject.address}`} >{`${employeeObject.first_name} ${employeeObject.last_name}`}</a>
+                </td>
                 <td>{employeeObject.address}</td>
-                <td>{`${web3.utils.fromWei(employeeObject.salary.toString(), 'ether')} eth`} </td>
-                <td>{`${(employeeObject.interval / 7).toFixed(2)} weeks`}</td>
-                <td><Button variant="success" onClick={this.handlePayEmployee}>Pay</Button> </td>
-                <td><Button variant="success" onClick={this.toggleModal}>Edit</Button></td>
+                {/* <td>{`${web3.utils.fromWei(employeeObject.salary.toString(), 'ether')} ${employeeObject.currencySymbol}`} </td> */}
+                <td>{`$${employeeObject.salary} ${employeeObject.currencySymbol}`} </td>
+                <td>{`Every ${(employeeObject.interval / 7).toFixed(2)} weeks`}</td>
+                <td>{this.state.paid?<Button variant="primary" onClick={this.togglePayModal}>Pay</Button>
+                :<Spinner animation="border" variant="primary"></Spinner>}</td>
+                <td><Button variant="primary" onClick={this.toggleModal}>Edit</Button></td>
             </tr>
                
 

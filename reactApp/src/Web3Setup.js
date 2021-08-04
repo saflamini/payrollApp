@@ -1,15 +1,17 @@
 import React, {Component} from 'react';
-import Web3 from 'web3';
 import { web3 } from './config';
-import { payrollContract } from './config';
-// import detectEthereumProvider from '@metamask/detect-provider';
-import { v4 as uuidv4 } from 'uuid';
+import { assets } from './config';
+import { BigNumber } from "bignumber.js";
+import { decimals } from "./config";
+import {assetSymbols} from "./config";
+import { CompanyRegistry } from './config';
+import { CompanyABI } from './config';
 import EmployeeList from './EmployeeList';
 import Balance from './Balance';
 import EditModal from './EditModal';
-import EmployeeForm from './EmployeeForm';
-// import { Contract } from 'web3-eth-contract';
-// import { payrollAddress } from './config';
+import PayModal from "./PayModal";
+import RunPayrollModal from "./RunPayrollModal";
+import {USDC, DAI, USDT} from "./seedBalances.js";
 import './Web3Setup.css';
 import ConnectWallet from './ConnectWallet';
 import CompanyInfo from "./CompanyInfo";
@@ -17,7 +19,29 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
+import Navigation from "./Navigation";
+import FundPage from "./FundPage";
+import Home from "./Home";
+import EmployeeFormModal from "./EmployeeFormModal";
+import {Route, Switch, Link} from "react-router-dom";
+import ManageRoster from './ManageRoster';
+import EmployeeInterface from "./EmployeeInterface";
+import EmployeeProfile from "./EmployeeProfile";
+import Payments from "./Payments";
 
+// import {BrowserRouter} from "react-router-dom";
+// import { Contract } from 'web3-eth-contract';
+// import { payrollAddress } from './config';
+// import EmployeeForm from './EmployeeForm';
+// import detectEthereumProvider from '@metamask/detect-provider';
+// import { v4 as uuidv4 } from 'uuid';
+
+//need to run all state and key operations here
+//use router here to pass necessary prop values to other page components
+//Switch
+//Route 1-path to /home - render home
+//Route 2-path to /fundpage - render fundpage
+//Route 3-path to /manageroster - render that page.... and so on
 
 
 
@@ -26,27 +50,41 @@ class Web3Setup extends Component {
     constructor(props) {
         super(props);
      
-    
         this.state = {
             connected: false,
             account: "",
+            companyRegistry: CompanyRegistry,
+            companyContract: null,
             company: "Please create a new company or connect a wallet",
+            companyAddress: "",
             companyId: null,
             roster: [], 
-            balance: "",
+            usdcBalance: "",
+            daiBalance: "",
+            usdtBalance: "",
             editingEmployee: false,
-            editingAddress: ""
+            editingAddress: "",
+            payingAddress: "",
+            runningPayroll: false,
+            paying: false,
+            creatingEmployee: false,
+            payments: "",
+            paymentList: []
         };
 
         this.setup = this.setup.bind(this);
         this.isConnected = this.isConnected.bind(this);
         this.disconnected = this.disconnected.bind(this);
         this.getCompany = this.getCompany.bind(this);
-        this.getCompanyId = this.getCompanyId.bind(this);
-        this.getEmployees = this.getEmployees.bind(this);
-        this.getCompanyBalance = this.getCompanyBalance.bind(this);
+        this.getCompanyInfo = this.getCompanyInfo.bind(this);
+        this.getCompanyBalances = this.getCompanyBalances.bind(this);
         this.getEmployeeArray = this.getEmployeeArray.bind(this);
+        this.showPayrollModal = this.showPayrollModal.bind(this);
+        this.closePayrollModal = this.closePayrollModal.bind(this);
+        this.renderPayrollModal = this.renderPayrollModal.bind(this);
         this.showEditModal = this.showEditModal.bind(this);
+        this.payingEmployee = this.payingEmployee.bind(this);
+        this.closePayModal = this.closePayModal.bind(this);
         this.closeEditModal = this.closeEditModal.bind(this);
         this.editingEmployee = this.editingEmployee.bind(this);
         this.handleModalUpdate = this.handleModalUpdate.bind(this);
@@ -54,13 +92,35 @@ class Web3Setup extends Component {
         this.updateSalary = this.updateSalary.bind(this);
         this.removeEmployee = this.removeEmployee.bind(this);
         this.addEmployee = this.addEmployee.bind(this);
-
+        this.fundPayroll = this.fundPayroll.bind(this);
+        this.payEmployee = this.payEmployee.bind(this);
+        this.runPayroll = this.runPayroll.bind(this);
+        this.withdrawFunds = this.withdrawFunds.bind(this);
+        this.createCompany = this.createCompany.bind(this);
+        this.showPayModal = this.showPayModal.bind(this);
+        this.getLastDayPaid = this.getLastDayPaid.bind(this);
+        this.sendSinglePayment = this.sendSinglePayment.bind(this);
+        this.toggleCreateModal = this.toggleCreateModal.bind(this);
+        this.showCreateModal = this.showCreateModal.bind(this);
+        this.closeCreateModal = this.closeCreateModal.bind(this);
+        this.getEmployeeName = this.getEmployeeName.bind(this);
+        this.addEmployeeToDB = this.addEmployeeToDB.bind(this);
+        this.addCompanyToDB = this.addCompanyToDB.bind(this);
+        this.getAdditionalEmployeeInfo = this.getAdditionalEmployeeInfo.bind(this);
+        this.addPaymentToDB = this.addPaymentToDB.bind(this);
+        this.addPayrollPaymentsToDB = this.addPayrollPaymentsToDB.bind(this);
+        this.getEmployeePaymentInfo = this.getEmployeePaymentInfo.bind(this);
+        this.getEmployerPaymentInfo = this.getEmployerPaymentInfo.bind(this);
+        this.getPayments = this.getPayments.bind(this);
     }
 
 
     componentDidMount() {
         this.setup()
     }
+
+    
+
 
     isConnected() {
         let accts = window.ethereum._state.accounts;
@@ -73,7 +133,8 @@ class Web3Setup extends Component {
             this.setState({account: accts[0]})
             this.setState({connected: true})
             this.getCompany();
-            this.getCompanyId();
+            
+            // this.getEmployeeArray()
         }
     }
 
@@ -85,7 +146,6 @@ class Web3Setup extends Component {
     async setup() {
 
         // This function detects most providers injected at window.ethereum
-  
         // const provider = await detectEthereumProvider();
       
         if (typeof window.ethereum !== 'undefined') {
@@ -97,7 +157,6 @@ class Web3Setup extends Component {
             console.log('you should consider metamask!')
           }
 
-
           const acct = await window.ethereum.request({ method: 'eth_accounts' })
           
           if (acct.length > 0) {
@@ -105,8 +164,6 @@ class Web3Setup extends Component {
                   connected: true, 
                   account: acct
                 })
-
-            // console.log(this.state.account);
           }
           
           let currentAccount = null;
@@ -139,10 +196,8 @@ class Web3Setup extends Component {
 
         if (currentAccount !== null) {
             this.setState({account: currentAccount})
-            console.log('here');
             this.getCompany();
-            this.getCompanyId();
-            this.getEmployees();
+            // this.getCompanyInfo();
         }
 
         const accountList = await window.ethereum.request({ method: 'eth_accounts' })
@@ -152,7 +207,11 @@ class Web3Setup extends Component {
             //if we have a connected metamask account, run getCompany and get companyId
             //these two functions also run if a reload occurs
             this.getCompany()
-            this.getCompanyId();
+            // this.getCompanyInfo()
+            // this.getCompanyBalances()
+            // console.log(this.state.companyAddress)
+
+            // this.getCompanyInfo();
         }
 
     }
@@ -160,98 +219,144 @@ class Web3Setup extends Component {
 
     //gets the company name for display
     async getCompany() {
-        let co = await payrollContract.methods.getCompany(this.state.account).call({from: this.state.account});
-        if (co.length !== 0 && co) {
-        this.setState({
-            company: co
-        })}  
-        else if (co.length === 0) {
+        let coAddress = await this.state.companyRegistry.methods.getCompanyAddress(this.state.account).call({from: this.state.account});
+        console.log(coAddress)
+
+        if (coAddress.length !== 0 && coAddress !== "0x0000000000000000000000000000000000000000") {
+            const CompanyContract = new web3.eth.Contract(CompanyABI, coAddress);
+            let companyName = await CompanyContract.methods.name().call();
+            let companyId = await CompanyContract.methods.getCompanyId().call();
+            //probably need to get company name out of here somehow
+            this.setState({
+                companyContract: CompanyContract,
+                companyAddress: coAddress,
+                company: companyName,
+                companyId: companyId
+            })
+            this.getCompanyBalances()
+            this.getEmployeeArray()
+
+        }  
+            
+        
+        else if (coAddress.length === 0) {
+
             this.setState({company: "Please create a new company or connect a wallet"})
         }
     }
 
     //gets company ID for employee creation handling
-    async getCompanyId() {
-        let coId = await payrollContract.methods.getCompanyId(this.state.account).call({from: this.state.account});
-        let co = await payrollContract.methods.getCompany(this.state.account).call({from: this.state.account})
-        if (co !== "")
-        this.setState({
-            companyId: coId
-        })       
-        // this.getEmployees();
-        this.getCompanyBalance();
-        this.getEmployeeArray();
-        // payrollContract.methods.getEmployeeSalary("0x00471Eaad87b91f49b5614D452bd0444499c1bd9", this.state.companyId).call({from: this.state.account}).then(console.log)
-
+    async getCompanyInfo() {
+        //change to calling the company contract created by the owner
+        //need a way to call company ID using the owner's connected address
+        //should likely be added as a method to the registry
+        // let coId = await payrollContract.methods.getCompanyId(this.state.account).call({from: this.state.account});
+        this.getEmployeeArray(); 
+        this.getCompanyBalances();
     }
 
-    async getEmployees() {
-        let employeeArray = await payrollContract.getPastEvents('employeeCreated', {filter: {_companyId: this.state.companyId}}, {fromBlock: "earliest"});
-        let employeeRoster = [];
-        for (let i = 0; i < employeeArray.length; i++) {
-            if(employeeArray[i].returnValues._companyId === this.state.companyId) {
-                // let salary = await payrollContract.methods.getEmployeeSalary(employeeArray[i].returnValues._address).call({from: this.state.account});
-                // let interval = await payrollContract.methods.getEmployeeInterval(employeeArray[i].returnValues._address).call({from: this.state.account});
-                employeeRoster.push({
-                    address: employeeArray[i].returnValues._address,
-                    // salary: `${web3.utils.fromWei(salary.toString(), 'ether')} eth`,
-                    // interval: `Every ${interval / 7} weeks`
-                    salary: `${web3.utils.fromWei(employeeArray[i].returnValues._salary.toString(), 'ether')} eth`,
-                    interval: `Every ${employeeArray[i].returnValues._interval / 7} weeks`
-                })
-            }
-        }
-        console.log(employeeRoster);
-        this.setState({roster: employeeRoster});
+  async getEmployeeName(employeeAddress) {
+      try {
+        
+        const response = await fetch(`http://localhost:5000/${employeeAddress}`);
+        const jsonData = await response.json();
 
-        // let employeeInformation = [];
-        // for (let i = 0; i < employeeRoster.length; i++) {
-        //     let employeeInfo = await payrollContract.getPastEvents('employeeInfo', {filter: {_address: employeeRoster[i]}}, {fromBlock: "earliest"})
-        //     employeeInformation.push(`Employee ${employeeRoster[i]} is being paid ${employeeInfo[i].returnValues._salary} wei with an interval of ${employeeInfo[i].returnValues._interval}`);
-        //     // console.log(employeeInformation.returnValues._interval);
-        // }
-        // console.log(employeeInformation)
-      
-        // let employeeInfo = payrollContract.events.employeeInfo({fromBlock: 0});
-        // console.log(employeeInfo)
-    }
+        console.log(jsonData);
+        return jsonData;
 
+      } catch (err) {
+          console.error(err.message)
+      }
+  }
+
+  async getAdditionalEmployeeInfo(address) {
+    try {
+        const response = await fetch(`http://localhost:5000/get-employee/${address}`);
+        const jsonData = await response.json();
+
+        // console.log(jsonData);
+        return jsonData;
+
+      } catch (err) {
+          console.error(err.message)
+      }
+  }
+
+//call company contract
     async getEmployeeArray() {
-        let employeeArray = await payrollContract.methods.getEmployeesByCompany(this.state.account).call({from: this.state.account});
+        
+        // console.log(this.state.companyContract)
+        
+        let employeeArray = await this.state.companyContract.methods.getEmployeesByCompany().call({from: this.state.account});
+        console.log(employeeArray)
+        if (employeeArray.length > 0) {
         let employeeRender = [];
         for (let i = 0; i < employeeArray.length; i++) {
-            let salary = await payrollContract.methods.getEmployeeSalary(employeeArray[i], this.state.companyId).call({from: this.state.account});
-            let interval = await payrollContract.methods.getEmployeeInterval(employeeArray[i], this.state.companyId).call({from: this.state.account});
+            let employeeDBInfo = await this.getAdditionalEmployeeInfo(employeeArray[i]);
+            // let name = await this.getEmployeeName(employeeArray[i]);
+            let first_name = employeeDBInfo.first_name;
+            let last_name = employeeDBInfo.last_name;
+            let id = employeeDBInfo.employee_id;
+            let state = employeeDBInfo.state;
+            let filingstatus = employeeDBInfo.filingstatus;
+            let allowances = employeeDBInfo.allowances;
+            let salary = await this.state.companyContract.methods.getEmployeeSalary(employeeArray[i]).call({from: this.state.account});
+            let interval = await this.state.companyContract.methods.getEmployeeInterval(employeeArray[i]).call({from: this.state.account});
+            let currency = await this.state.companyContract.methods.getEmployeeCurrency(employeeArray[i]).call({from: this.state.account});
+            let adjustedSalary = new BigNumber(salary).shiftedBy(-1 * decimals[assetSymbols[currency]]).c[0];
+            
             if (employeeArray[i] !== "0x0000000000000000000000000000000000000000") {
+                let lastDay = await this.getLastDayPaid(employeeArray[i]);
                 employeeRender.push({
+                first_name: first_name,
+                id: id,
+                last_name: last_name,
                 address: employeeArray[i], 
-                salary: salary, 
-                interval: interval
+                currency: currency,
+                lastDayPaid: lastDay == 0? (Date.now() / 1000 - (interval * 86400)): lastDay,
+                salary: adjustedSalary, 
+                interval: interval,
+                state: state,
+                filingstatus: filingstatus,
+                allowances: allowances
             })}}
 
             this.setState({
                 roster: employeeRender
             })
-            console.log(employeeRender);
-        }
 
-    async getCompanyBalance() {
-        let bal = await payrollContract.methods.getCompanyBalance(this.state.account).call({from: this.state.account});
-        this.setState({balance: web3.utils.fromWei(bal.toString(), 'ether')});
+            this.getPayments();
+        }
+    }
+
+    //call company contract
+    //split up by asset type
+    async getCompanyBalances() {
+        let usdcBal = await USDC.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
+        let daiBal = await DAI.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
+        let usdtBal = await USDT.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
+        this.setState({
+            usdcBalance: usdcBal,
+            daiBalance: daiBal,
+            usdtBalance: usdtBal 
+        });
     }
 
     editingEmployee(employeeAddress) {
         this.setState({editingEmployee: true, editingAddress: employeeAddress});
+        //the below line may not be necessary
         this.showEditModal(employeeAddress)
     }
 
     showEditModal(employeeAddress) {
         let currentSalary;
         let currentInterval;
+        let currencyAddress;
         for (let i = 0; i < this.state.roster.length; i++) {
             if (this.state.roster[i].address === employeeAddress) {
                 currentSalary = this.state.roster[i].salary;
                 currentInterval = this.state.roster[i].interval;
+                currencyAddress = this.state.roster[i].currency;
                 break;
             }
             
@@ -261,11 +366,16 @@ class Web3Setup extends Component {
             address={employeeAddress}
             salary={currentSalary}
             interval={currentInterval}
+            currencySymbol={assetSymbols[currencyAddress]}
             closeEditModal={this.closeEditModal}
             handleModalUpdate={this.handleModalUpdate}
             removeEmployee={this.removeEmployee}
             />
         )
+    }
+
+    closeEditModal() {
+        this.setState({editingEmployee: false, editingAddress: ""});
     }
 
     handleModalUpdate(employeeObject) {
@@ -278,101 +388,548 @@ class Web3Setup extends Component {
             }
         }
         if (employeeObject.salary !== emp.salary) {
-            this.updateSalary(employeeObject.address, this.state.companyId, employeeObject.salary)
+            this.updateSalary(employeeObject.address, employeeObject.salary)
         }
         if (employeeObject.interval !== emp.interval) {
-            this.updateInterval(employeeObject.address, this.state.companyId, employeeObject.interval)
+            this.updateInterval(employeeObject.address, employeeObject.interval)
         }
         else {
-            console.log('no changes made');
+            // console.log('no changes made');
         }
         this.setState({editingEmployee: false})
     }
 
-    async updateInterval(address, companyId, newInterval) {
-        await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.state.account})
-        .then(console.log)
+    async addCompanyToDB(company_id, company_owner_address, company_address, company_name) { 
+        try {
+            await this.getCompany();
+            const body = {company_id, company_owner_address, company_address, company_name};
+            const response = await fetch("http://localhost:5000/create-company", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+            
+            window.location = "/home";
+
+        } catch (err) {
+            console.error(err.message)
+        }
     }
 
-    async updateSalary(address, companyId, newSalary) {
-        console.log(address);
-        console.log(companyId);
-        console.log(newSalary);
-        await payrollContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.state.account})
+    async createCompany(name) {
+        await this.state.companyRegistry.methods.createCompany(name).send({from: this.state.account, gas: 6721975})
         .then(console.log)
+
+        await this.getCompany();
+        console.log(this.state);
+        await this.addCompanyToDB(this.state.companyId, this.state.account, this.state.companyAddress, this.state.company);
+        //order of ops a problem here - asking for things for companydb in next function, which it does not yet have?
+        // await this.addCompanyToDB());
+        // .then(consoCompany()le.log(this.state.companyId))
+        // .then(console.log(this.state.companyAddress))
+        //company ID must be correctly created in getCompany and set to state
+        // .then(await this.addCompanyToDB(this.state.companyId, this.state.account, this.state.companyAddress, this.state.company))
+    }
+
+    //for all of these - call the relevant company contract
+    async updateInterval(address, newInterval) {
+        await this.state.companyContract.methods.editEmployeeInterval(address, newInterval).send({from: this.state.account})
+        .then(console.log)
+        .then(this.getEmployeeArray())
+    }
+
+    async updateSalary(address, newSalary) {
+        let employeeCurrency;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == address) {
+                // let d = decimals[assetSymbols[this.state.roster[i].currency]]
+                // let adjustedCurrency = new BigNumber(this.state.roster[i].currency).shiftedBy(-1 * d);
+                employeeCurrency = this.state.roster[i].currency;
+                break;
+            }
+        }
+        // let newSal = new BigNumber(newSalary).shiftedBy(decimals[assetSymbols[employeeCurrency]]);
+        await this.state.companyContract.methods.editEmployeeSalary(address, newSalary).send({from: this.state.account})
+        .then(console.log)
+        .then(this.getEmployeeArray())
        
     }
 
-    addEmployee(employee, address) {
-        let newEmployee = {...employee, id: uuidv4()}
-        payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.state.companyId).send({from: this.state.account, gas: 6721975})
+    async addPaymentToDB() {
+        try {
+            const body = {}
+            const response = await fetch("", {
+                METHOD: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            })
+        } catch (err) {
+            console.error(err.message)
+        }
+    }
+
+    async addEmployeeToDB(eth_address, company_id, first_name, last_name, salary, currency, fiat_currency, interval, state, filingstatus, allowances) {
+        try {
+            const body = {eth_address, company_id, first_name, last_name, salary, currency, fiat_currency, interval, state, filingstatus, allowances};
+            const response = await fetch("http://localhost:5000/manage-roster", {
+                method: "POST",
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+
+            // window.location = "/home";
+
+        } catch (err) {
+            console.error(err.message)
+        }
+    }
+
+    async addEmployee(employee) {
+        //get these from create e section, and make sure that company Id is defined in this component
+        await this.addEmployeeToDB(web3.utils.toChecksumAddress(employee.address), this.state.companyId, employee.first_name, employee.last_name, employee.salary, employee.currency, 'USD', employee.interval, employee.state, employee.filingstatus, employee.allowances);
+        // let newEmployee = {...employee, id: uuidv4()}
+        let employeeSalary = new BigNumber(employee.salary).shiftedBy(decimals[employee.currency]);
+        await this.state.companyContract.methods.createEmployee(employee.address, assets[employee.currency], employeeSalary, employee.interval).send({from: this.state.account, gas: 6721975})
         .then(console.log)
-        // .then(
-        // this.setState(state => ({ 
-        //     employees: [...state.employees, newEmployee]
-        // }))
-       
-        // )
+        .then(this.getCompanyInfo())
+
     }
 
     async removeEmployee(address) {
-        await payrollContract.methods.deleteEmployee(address, this.state.companyId).send({from: this.state.account})
+        await this.state.companyContract.methods.deleteEmployee(address).send({from: this.state.account, gas: 6721975})
         .then(console.log)
-        //error handling might be nice here
-        this.setState({editingEmployee: false});
-        // this.setState(state => {
-        //     roster: state.roster.filter(employee => employee.address !== address)
-        // });
+        .then(this.setState({editingEmployee: false}))
+        .then(this.getCompanyInfo())
     }
 
-    closeEditModal() {
-        console.log('closing')
-        this.setState({editingEmployee: false, editingAddress: ""});
+    async fundPayroll(amount, currencyAddress) {
+        await this.state.companyContract.methods.fundERCPayroll(amount, currencyAddress).send({from: this.state.account,  gas: 6721975})
+        .then(console.log)
+        .then(this.getCompanyBalances());
     }
+
+    async withdrawFunds(amount, currencyAddress) {
+        await this.state.companyContract.methods.withdrawFunds(amount, currencyAddress).send({from: this.state.account, gas: 6721975})
+        .then(console.log)
+        .then(this.getCompanyBalances())
+    }
+
+    async addPaymentToDB(company_id, employee_id, salary, interval, state, filingstatus, allowances) {
+        try {
+            const body = {company_id, employee_id, salary, interval, state, filingstatus, allowances};
+            const response = await fetch("http://localhost:5000/pay-employee", {
+                method: "POST",
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+
+            // window.location = "/home";
+
+        } catch (err) {
+            console.error(err.message)
+        }
+    }
+
+    async payEmployee(address) {
+        let employee;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == address) {
+                employee = this.state.roster[i];
+                break;
+            }
+        }
+        await this.state.companyContract.methods.payEmployee(address).send({from: this.state.account}).then(console.log)
+
+
+        await this.addPaymentToDB(this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances)
+        console.log('address ' + address)
+        this.getCompany()
+    }
+
+    async addPayrollPaymentsToDB() {
+        //if last day paid is less than 10 s
+        //if (block.timestamp >= employees[_address].lastDayPaid + intervalSeconds)
+        //if now is >= last day paid + (interval * 365)
+        // add a standard payroll payment to the database
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (Date.now() >= this.state.roster[i].lastDayPaid + (this.state.roster[i].interval * 86400)) {
+                console.log(this.state.roster[i])
+                await this.addPaymentToDB(this.state.companyId, this.state.roster[i].id, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances);
+            }
+        }
+    }
+
+    //issues here
+    async runPayroll() {
+        console.log(this.state.account);
+        try {
+            await this.addPayrollPaymentsToDB()
+            await this.state.companyContract.methods.runPayroll().send({from: this.state.account, gas: 6721975})
+            .then(console.log)
+            .then(this.setState({runningPayroll: false}))
+            .then(this.getCompany())
+        } catch (err) {
+            console.error(err.message)
+        }
+        
+    }
+
+    async getLastDayPaid(employeeAddress) {
+        let rawDay = await this.state.companyContract.methods.getLastDayPaid(employeeAddress).call({from: this.state.account});
+        return rawDay;
+    }
+
+    async sendSinglePayment(employeeAddress, amount) {
+        let currency;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == employeeAddress) {
+                currency = assetSymbols[this.state.roster[i].currency];
+                break;
+            }
+        }
+        let employee;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == employeeAddress) {
+                employee = this.state.roster[i];
+                break;
+            }
+        }
+
+        let payment = new BigNumber(amount).shiftedBy(decimals[currency]);
+        await this.state.companyContract.methods.sendOneOffPayment(employeeAddress, payment).send({from: this.state.account}).then(console.log)
+        .then(await this.addPaymentToDB(this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances))
+        .then(this.getCompany());
+        //include a loader here
+    }
+
+    renderPayrollModal() {
+        return (
+            <RunPayrollModal 
+            runPayroll={this.runPayroll}
+            showPayrollModal={this.showPayrollModal}
+            closePayrollModal={this.closePayrollModal}
+            />
+        )
+    }
+    
+    showPayrollModal() {
+        this.setState({runningPayroll: true});
+        // this.renderPayrollModal(employeeAddress)
+    }
+
+    closePayrollModal() {
+        this.setState({runningPayroll: false});
+    }
+
+    
+   payingEmployee(employeeAddress) {
+    //    console.log(employeeAddress)
+        this.setState({payingAddress: employeeAddress, paying: true})
+    }
+
+
+   
+
+    showPayModal(employeeAddress) {
+        console.log(this.state.payingAddress)
+        let currentSalary;
+        let currentInterval;
+        let currencyAddress;
+        let lastDayPaid;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address === employeeAddress) {
+                // console.log(this.state.roster[i])
+                currentSalary = this.state.roster[i].salary;
+                currentInterval = this.state.roster[i].interval;
+                currencyAddress = this.state.roster[i].currency;
+                lastDayPaid = this.state.roster[i].lastDayPaid;
+                break;
+            }
+        }
+        return (
+            <PayModal 
+            address={employeeAddress}
+            salary={currentSalary}
+            interval={currentInterval}
+            currencySymbol={assetSymbols[currencyAddress]}
+            lastDayPaid={lastDayPaid}
+            closePayModal={this.closePayModal}
+            payEmployee={this.payEmployee}
+            sendSinglePayment={this.sendSinglePayment}
+            />
+        )
+    }
+
+    closePayModal() {
+        this.setState({
+            paying: false, 
+            payingAddress: ""
+        })
+    }
+
+    toggleCreateModal() {
+        this.setState({
+            creatingEmployee: true
+        })
+    }
+
+    showCreateModal() {
+        return (
+            <EmployeeFormModal
+            addEmployee={this.addEmployee}
+            closeCreateModal={this.closeCreateModal}
+            />
+        )
+    }
+
+    closeCreateModal() {
+        this.setState({creatingEmployee: false})
+    }
+
+
+    //create a 'confirm run payroll' modal and pop it up when button in employee list is good to go
+   
+    //get payment data
+    
+    async getEmployerPaymentInfo() {
+        console.log(this.state)
+        try {
+            const response = await fetch(`http://localhost:5000/employer-payments/${this.state.companyId}`);
+            const jsonData = await response.json();
+    
+            // console.log(jsonData);
+            return jsonData;
+    
+          } catch (err) {
+              console.error(err.message)
+          }
+    }
+
+    async getEmployeePaymentInfo(employeeId) {
+        try {
+            const response = await fetch(`http://localhost:5000/employee-payments/${employeeId}`);
+            const jsonData = await response.json();
+    
+            // console.log(jsonData);
+            return jsonData;
+    
+          } catch (err) {
+              console.error(err.message)
+          }
+    }
+
+    async getPayments() {
+        let employerPaymentData = [];
+    
+        employerPaymentData = await this.getEmployerPaymentInfo();
+
+        let employeePayments = [];
+
+        for (let i = 0; i < this.state.roster.length; i++) {
+            
+            let e = {
+                fullName: "",
+                employee_id: null,
+                lastPaid: "",
+                gross_pay: 0,
+                federal_tax_withheld: 0,
+                state_tax_withheld: 0,
+                medicare_tax_withheld: 0,
+                net_pay: 0,
+                employer_ss_withheld: 0,
+                ss_tax_withheld: 0,
+                employer_medicare_withheld: 0,
+                employer_futa_withheld: 0,
+                employer_state_u_withheld: 0,
+                total_employer_cost: 0
+            }
+
+            console.log(employerPaymentData)
+            if (employerPaymentData.length > 0) {
+            for (let i = 0; i < employerPaymentData.length; i++) {
+                
+                if (employerPaymentData[i].employee_id == this.state.roster[i].id) {
+                    e.employer_ss_withheld = employerPaymentData[i].employer_ss_withheld;
+                    e.employer_medicare_withheld = employerPaymentData[i].employer_medicare_withheld;
+                    e.employer_futa_withheld = employerPaymentData[i].employer_futa_withheld;
+                    e.employer_state_u_withheld = employerPaymentData[i].employer_state_u_withheld;
+                    e.total_employer_cost = employerPaymentData[i].total_employer_cost;
+                    break;
+                }
+            }
+
+            let employeePayment = await this.getEmployeePaymentInfo(this.state.roster[i].id);
+            console.log('employeePayment')
+            console.log(employeePayment)
+
+            e.fullName = `${this.state.roster[i].first_name} ${this.state.roster[i].last_name}`;
+            e.employee_id = this.state.roster[i].id;
+            e.lastPaid = this.state.roster[i].lastDayPaid;
+            e.gross_pay = employeePayment[i].gross_pay;
+            e.federal_tax_withheld = employeePayment[i].federal_tax_withheld;
+            e.state_tax_withheld = employeePayment[i].state_tax_withheld;
+            e.ss_tax_withheld = employeePayment[i].ss_tax_withheld;
+            e.medicare_tax_withheld = employeePayment[i].medicare_tax_withheld;
+            e.net_pay = employeePayment[i].net_pay;
+
+            employeePayments.push(e)
+        }      
+
+        console.log('getpayments')
+            this.setState({
+                paymentList: employeePayments
+            })
+            
+    }}
+ 
 
 
 
     render() {
-
         
         return (
             <div>
+            
+            <Navigation className="nav" />
             <Container>
+                <Row>
+                <Col>
+                <CompanyInfo 
+                account={this.state.account} 
+                company={this.state.company} 
+                getCompany={this.getCompany} 
+                createCompany={this.createCompany}
+                addCompanyToDB={this.addCompanyToDB}
+                /> 
+                </Col>
+                <Col>
                 {this.state.connected? 
-                <Card bg="success" className="connectWallet">{this.state.account}</Card>
+                <Card className="connectWallet">{`${this.state.account.toString().substring(0, 4)}...${this.state.account.toString().substring(38)}`}</Card>
                 : <ConnectWallet />
                 }
+                </Col>
+                </Row>
             </Container>
+
+            <Switch>
+                <Route exact path="/home" render={ () =>
+                    <Home
+                    account={this.state.account} 
+                    usdcBalance={this.state.usdcBalance} 
+                    daiBalance={this.state.daiBalance}
+                    usdtBalance={this.state.usdtBalance}
+                    fundPayroll={this.fundPayroll} 
+                    withdraw={this.withdrawFunds}
+                    companyAddress={this.state.account} 
+                    roster={this.state.roster}
+                    payEmployee={this.payEmployee}
+                    editingEmployee={this.editingEmployee} 
+                    companyContract={this.companyContract}
+                    showPayrollModal={this.showPayrollModal}
+                    renderPayrollModal={this.renderPayrollModal}
+                    closePayrollModal={this.closePayrollModal}
+                    payingEmployee={this.payingEmployee}
+                    toggleAddEmployee={this.toggleCreateModal}
+                    closeCreateModal={this.closeCreateModal}
+                    />
+                    }>
+                </Route>
+                <Route exact path="/fund" render={ () => 
+                    <FundPage 
+                    account={this.state.account} 
+                    usdcBalance={this.state.usdcBalance} 
+                    daiBalance={this.state.daiBalance}
+                    usdtBalance={this.state.usdtBalance}
+                    fundPayroll={this.fundPayroll} 
+                    withdraw={this.withdrawFunds}
+                    />
+                    }>
+                </Route>
+                <Route exact path="/manage-roster" render={() =>
+                <ManageRoster
+                account={this.state.account} 
+                companyAddress={this.state.account} 
+                roster={this.state.roster}
+                payingEmployee={this.payingEmployee}
+                payEmployee={this.payEmployee}
+                editingEmployee={this.editingEmployee} 
+                companyContract={this.state.companyContract}
+                addEmployee={this.addEmployee}
+                showPayrollModal={this.showPayrollModal}
+                renderPayrollModal={this.renderPayrollModal}
+                closePayrollModal={this.closePayrollModal}
+                toggleAddEmployee={this.toggleCreateModal}
+                closeCreateModal={this.closeCreateModal}
+                />
+                }>
+                </Route>
+                
+                <Route exact path="/employee" render={() => 
+                <EmployeeInterface
+                />}>
+                </Route>
+
+                <Route exact path="/manage-roster/:address"
+                render={routeProps => <EmployeeProfile {...routeProps} 
+                getAdditionalEmployeeInfo={this.getAdditionalEmployeeInfo}
+                editingEmployee={this.editingEmployee} 
+                payments={this.state.payments}
+                /> }
+                >
+                </Route>
+
+                <Route exact path="/payments"
+                render={routeProps => <Payments {...routeProps} 
+                roster={this.state.roster}
+                companyId={this.state.companyId}
+                paymentList={this.state.paymentList}
+                />}
+                >
+                </Route>
+
+            </Switch>
             
-                <Container className="top">
+                {/* <Container className="top">
                     <Row>
                         
                         <Col>
-                        <Container bg="dark">
-                        <CompanyInfo account={this.state.account} company={this.state.company} getCompany={this.getCompany} />
-                        <Balance address={this.state.account} companyId={this.state.companyId} balance={this.state.balance}/>
+                        <Container bg="light">
+                        <Balance 
+                        account={this.state.account} 
+                        companyId={this.state.companyId} 
+                        usdcBalance={this.state.usdcBalance} 
+                        daiBalance={this.state.daiBalance}
+                        usdtBalance={this.state.usdtBalance}
+                        fundPayroll={this.fundPayroll} 
+                        withdraw={this.withdrawFunds}/>
                         </Container>
                         </Col>
                         <Col>
-                        <Card  className="employeeForm" bg="dark">
+                        <Card  className="employeeForm" bg="light">
                         <Card.Header><h3>Add a New Employee</h3></Card.Header>
                             <EmployeeForm 
                             addEmployee={this.addEmployee}/>
                         </Card>
                         </Col>
                     </Row>
-                </Container>
+                </Container> */}
+
                 <Container>
                 {this.state.editingEmployee? this.showEditModal(this.state.editingAddress): console.log('not editing')}
-                <EmployeeList className="employeeList"
+                {this.state.runningPayroll? this.renderPayrollModal(): console.log('not running payroll')}
+                {this.state.paying? this.showPayModal(this.state.payingAddress): console.log('not paying')}
+                {this.state.creatingEmployee? this.showCreateModal(): console.log('not creating')}
+
+                {/* <EmployeeList className="employeeList"
                 account={this.state.account} 
                 companyId={this.state.companyId} 
                 companyAddress={this.state.account} 
                 roster={this.state.roster}
-                // showEditModal={this.showEditModal}
-                // closeEditModal={this.closeEditModal}
+                payEmployee={this.payEmployee}
                 editingEmployee={this.editingEmployee} 
-                />
+                companyContract={this.state.companyContract}
+                runningPayroll={this.toggleRunningPayroll}
+                /> */}
                 
                 </Container>
 

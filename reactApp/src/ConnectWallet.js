@@ -1,6 +1,5 @@
 import React, {Component} from "react";
-import { web3 } from './config';
-import detectEthereumProvider from '@metamask/detect-provider';
+// import detectEthereumProvider from '@metamask/detect-provider';
 import Button from 'react-bootstrap/Button';
 
 
@@ -22,7 +21,7 @@ class ConnectWallet extends Component {
 
     render() {
         return (
-            <Button variant="success" onClick={this.enableWallet} className="connectWallet">Connect Wallet</Button>
+            <Button variant="primary" onClick={this.enableWallet} className="connectWallet">Connect Wallet</Button>
         )
     }
 }

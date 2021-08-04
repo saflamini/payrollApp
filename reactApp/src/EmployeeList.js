@@ -1,17 +1,22 @@
 import React, {Component} from 'react';
-import EmployeeForm from "./EmployeeForm";
 import Employee from "./Employee";
-import { payrollABI } from './config';
-import { payrollAddress } from './config';
-import { payrollContract } from './config';
+// import { payrollABI } from './config';
+// import { payrollAddress } from './config';
+// import { CompanyRegistry } from './config';
+// import { CompanyABI } from './config';
 import { v4 as uuidv4 } from 'uuid';
-import Web3 from 'web3';
+// import Web3 from 'web3';
 import "./EmployeeList.css";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+// import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
-import EditModal from './EditModal';
+import Card from 'react-bootstrap/Card';
+import { assetSymbols, decimals } from "./config";
+import Button from 'react-bootstrap/esm/Button';
+// import EditModal from './EditModal';
+import "./EmployeeList.css";
+// import { BigNumber } from "bignumber.js";
 
 
 
@@ -23,26 +28,29 @@ class EmployeeList extends Component {
             employees: [{name: 'sam'}],
             editing: false,
             showEdit: false,
-            showCreate: false
+            showCreate: false,
+            companyContract: this.props.companyContract
         }
 
         this.addEmployee = this.addEmployee.bind(this);
         this.renderEmployees = this.renderEmployees.bind(this);
-        this.remove = this.remove.bind(this);
-        this.updateName = this.updateName.bind(this);
+        // this.updateName = this.updateName.bind(this);
         this.updateSalary = this.updateSalary.bind(this);
         this.updateInterval = this.updateInterval.bind(this);
         this.payEmployee = this.payEmployee.bind(this);
         this.removeEmployee = this.removeEmployee.bind(this);
         this.handleEditing = this.handleEditing.bind(this);
+        this.handlePaying = this.handlePaying.bind(this);
         this.getEditingEmployee = this.getEditingEmployee.bind(this);
+        this.run = this.run.bind(this);
+        this.toggleAddEmployee = this.toggleAddEmployee.bind(this);
     }
 
     //this creates an employee on the back end.
     //but how to render them based on the connected company??
     addEmployee(employee, address) {
         let newEmployee = {...employee, id: uuidv4()}
-        payrollContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
+        this.state.companyContract.methods.createEmployee(employee.address, employee.salary, employee.interval, this.props.companyId).send({from: this.props.companyAddress, gas: 6721975})
         .then(console.log)
         .then(
         this.setState(state => ({ 
@@ -52,78 +60,44 @@ class EmployeeList extends Component {
         )
     }
 
-    // addEmployee(employee) {
-    //     let newEmployee = {...employee, id: uuidv4()}
-    //     this.setState(state => ({ 
-    //         employees: [...state.employees, newEmployee]
-    //     }))
-    // }
-
-    fundPayroll(amount) {
-        
-    }
 
 
-    remove(id) {
-        this.setState({
-            employees: this.state.employees.filter(employee => employee.id !== id)
-        })
-    }
-
-    updateName(id, updatedName) {
-        let updatedEmployees = this.state.employees.map(employee => {
-            if(employee.id === id) {
-                return {...employee, name: updatedName}
-            }
-            return employee;
-        })
-        this.setState({employees: updatedEmployees})
-    }
-
-    // updateSalary(id, updatedSalary) {
+    // updateName(id, updatedName) {
     //     let updatedEmployees = this.state.employees.map(employee => {
     //         if(employee.id === id) {
-    //             return {...employee, salary: updatedSalary}
+    //             return {...employee, name: updatedName}
     //         }
     //         return employee;
     //     })
     //     this.setState({employees: updatedEmployees})
     // }
 
-    // updateInterval(id, updatedInterval) {
-    //     let updatedEmployees = this.state.employees.map(employee => {
-    //         if(employee.id === id) {
-    //             return {...employee, interval: updatedInterval}
-    //         }
-    //         return employee;
-    //     })
-    //     this.setState({employees: updatedEmployees})
-    // }  
 
     async updateSalary(address, companyId, newSalary) {
         this.props.handleModalUpdate()
         console.log(address);
         console.log(companyId);
         console.log(newSalary);
-        await payrollContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.props.account})
+        await this.state.companyContract.methods.editEmployeeSalary(address, companyId, newSalary).send({from: this.props.account})
         .then(console.log)
        
     }
 
     async updateInterval(address, companyId, newInterval) {
         this.props.handleModalUpdate()
-        await payrollContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.props.account})
+        await this.state.companyContract.methods.editEmployeeInterval(address, companyId, newInterval).send({from: this.props.account})
         .then(console.log)
     }
 
-    async payEmployee(address, companyId) {
-        await payrollContract.methods.payEmployee(address, companyId).send({from: this.props.account})
-        .then(console.log)
+    async payEmployee(address) {
+        this.props.payEmployee(address);
+        // await payrollContract.methods.payEmployee(address, companyId).send({from: this.props.account})
+        // .then(console.log)
     }
 
     //need to remove deleted employee from display
     async removeEmployee(address, companyId) {
-        await payrollContract.methods.deleteEmployee(address, companyId).send({from: this.props.account})
+        await this.state.companyContract.methods.deleteEmployee(address, companyId).send({from: this.props.account})
         .then(console.log)
         // this.setState(state => {
         //     roster: state.roster.filter(employee => employee.address !== address)
@@ -136,6 +110,20 @@ class EmployeeList extends Component {
 
     handleEditing(employeeAddress) {
         this.props.editingEmployee(employeeAddress);
+    }
+
+    handlePaying(employeeAddress) {
+        this.props.payingEmployee(employeeAddress)
+    }
+
+    run() {
+        //this.props - pass to web3 setup for modal
+        this.props.showPayrollModal()
+    }
+
+    toggleAddEmployee() {
+        console.log('working')
+        this.props.toggleAddEmployee();
     }
 
    
@@ -158,16 +146,25 @@ class EmployeeList extends Component {
     //         ))
     //     )
     // }
+
+    // ${new BigNumber(this.props.usdtBalance).shiftedBy(-1 * (decimals['USDT'])).toFixed(2)} usdt`}
     renderEmployees() {
         return (
             this.props.roster.map(employee => (
                 <tbody key={employee.address + this.props.companyId}>{
-                    <Employee 
-                    // name={employee.name}
+                    <Employee className="e"
+                    first_name={employee.first_name}
+                    last_name={employee.last_name}
+                    filingstatus={employee.filingstatus}
+                    state={employee.state}
+                    allowances={employee.allowances}
                     address={employee.address}
                     account={this.props.account}
                     salary={employee.salary}
                     interval={employee.interval} 
+                    lastDayPaid={employee.lastDayPaid}
+                    currencyAddress={employee.currency}
+                    currencySymbol={assetSymbols[employee.currency]}
                     id={employee.id}
                     companyId={this.props.companyId}
                     removeEmployee={this.removeEmployee}
@@ -176,6 +173,7 @@ class EmployeeList extends Component {
                     updateSalary={this.updateSalary}
                     updateInterval={this.updateInterval}
                     handleEditing={this.handleEditing}
+                    handlePaying={this.handlePaying}
                     />}
                 </tbody>
             ))
@@ -196,18 +194,6 @@ class EmployeeList extends Component {
 
     render() {
 
-        // if(this.state.editing) {
-        //     let e = this.getEditingEmployee();
-        //     console.log(e);
-        //     return (
-        //     <EditModal 
-        //     show={true} 
-        //     address={e.address} 
-        //     salary={e.salary} 
-        //     interval={e.interval}/>
-  
-        // )
-        // }
   
     
         return (
@@ -215,13 +201,23 @@ class EmployeeList extends Component {
             <div className="employeeList">
                 <Container>
                     <Row>
-                        {/* <Col xs={10}> */}
+                        <Card className="employeeListTitle" >
                         <h3>Employee Roster</h3>
-                        <Table responsive striped bordered hover variant="dark">
+                        </Card>
+                        <Button
+                        className="run-payroll" onClick={this.run}>
+                            Run Payroll
+                        </Button>
+                        <Button
+                         className="add-employee" variant="primary" onClick={this.toggleAddEmployee}>
+                            Add New Employee
+                        </Button>
+                        <Table className="employees"responsive bordered hover>
                         <thead>
                             <tr>
-                            <th>Address</th>
-                            <th>Salary</th>
+                            <th>Name</th>
+                            <th>Employee Address</th>
+                            <th>Annual Salary</th>
                             <th>Interval</th>
                             <th>Pay</th>
                             <th>Edit</th>
@@ -230,14 +226,6 @@ class EmployeeList extends Component {
                         {this.renderEmployees()}  
                         </Table> 
                    
-                        {/* </Col> */}
-
-                        {/* <Col>
-                        <div>
-                        <h4>Add a New Employee</h4>
-                        <EmployeeForm key={'form'} addEmployee={this.addEmployee}/>
-                        </div> 
-                        </Col> */}
                     </Row>
                 </Container>
             </div>
