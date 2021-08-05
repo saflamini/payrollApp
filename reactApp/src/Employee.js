@@ -5,7 +5,6 @@ import Spinner from 'react-bootstrap/Spinner';
 // import { BigNumber } from "bignumber.js";
 
 
-
 class Employee extends Component {
     constructor(props) {
         super(props);

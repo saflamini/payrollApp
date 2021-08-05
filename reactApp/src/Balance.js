@@ -8,7 +8,6 @@ import Card from 'react-bootstrap/esm/Card';
 import Container from 'react-bootstrap/esm/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-
 import {Pie} from 'react-chartjs-2';
 import Button from 'react-bootstrap/esm/Button';
 
@@ -35,8 +34,6 @@ class Balance extends Component {
     // }
 
     fundPayroll(amount, currency) {
-        console.log(amount);
-        console.log(currency);
         this.props.fundPayroll(amount, currency)
         // payrollContract.methods.fundPayroll(this.props.companyId).send({from: this.props.address, value: amount})
         // .then(console.log);
