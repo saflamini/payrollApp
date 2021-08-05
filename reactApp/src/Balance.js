@@ -34,8 +34,6 @@ class Balance extends Component {
     // }
 
     fundPayroll(amount, currency) {
-        console.log(amount);
-        console.log(currency);
         this.props.fundPayroll(amount, currency)
         // payrollContract.methods.fundPayroll(this.props.companyId).send({from: this.props.address, value: amount})
         // .then(console.log);

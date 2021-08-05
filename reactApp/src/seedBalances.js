@@ -317,8 +317,8 @@ export const USDT = new web3.eth.Contract(ERC20ABI, USDTAddress)
   const whale = "0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503"
   //change these two for each restart
   // const user = ""; //account 10
-  const user2 = "0xe039EBBC18E7e4aC726372aD1beCE42F138519A0" //account 9
-  const companyAddress = "0x80E376ad1f06B784a0F5DA535269b76eEdAb1c45"
+  const user2 = "0xfc14619b4DFBCCf2538f9a409a6BeA214a6481aC" //account 9
+  const companyAddress = "0xf32cc06B76A94BEfE399e05E5F10669727FCA61E"
   
 
 
