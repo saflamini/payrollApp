@@ -130,7 +130,7 @@ class PaymentList extends Component {
                    <EmployerPayment 
                     fullName={payment.fullName}
                     employee_id={payment.employee_id}
-                    lastPaid={payment.lastPaid}
+                    lastPaid={(new Date(payment.lastPaid * 1000)).toLocaleDateString()}
                     gross_pay={payment.gross_pay}
                     federal_tax_withheld={payment.federal_tax_withheld}
                     state_tax_withheld={payment.state_tax_withheld}
