@@ -1,6 +1,6 @@
 .App {
   text-align: center;
-  font-family: 'Archivo', Bold 700;
+  font-family: 'Georama', sans-serif;
 }
 
 .App-logo {
@@ -40,7 +40,8 @@
 
 body {
   font-family: 'Cabin Regular 400', sans-serif;
-    background-color: #FAF9F6;
+    /* background-color: #FAF9F6; */
+    background-color: #FFFFFF;
   /* background-image: linear-gradient(147deg, #000000 0%, #434343 74%); */
 }
 

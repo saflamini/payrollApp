@@ -3,6 +3,10 @@
     padding: 2%;
     margin-top: 5%;
     background: #FFFFFF;
+    box-shadow: 0px 2px 5px 0px;
+    border-radius: 1%;
+
+
 }
 
 .add-button {
@@ -14,6 +18,7 @@
     align-items: flex-start;
     margin-top: 5%;
     background: #FFFFFF;
+    box-shadow: 0px 2px 5px 0px;
   
     /* padding: 3%; */
 }
@@ -23,6 +28,9 @@
     margin-top: 1%;
     padding: 2%;
     background: #FFFFFF;
+    box-shadow: 0px 2px 5px 0px;
+    border-radius: 1%;
+
 }
 
 .pie-chart {
@@ -32,6 +40,9 @@
     margin-top: 5%;
     padding-bottom: 20%;
     background: #FFFFFF;
+    border-radius: 3%;
+    box-shadow: 0px 2px 5px 0px;
+
 }
 
 body {

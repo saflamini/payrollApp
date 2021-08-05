@@ -692,7 +692,6 @@ class Web3Setup extends Component {
     //get payment data
     
     async getEmployerPaymentInfo() {
-        console.log(this.state)
         try {
             const response = await fetch(`http://localhost:5000/employer-payments/${this.state.companyId}`);
             const jsonData = await response.json();

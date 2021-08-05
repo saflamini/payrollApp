@@ -8,7 +8,6 @@ import Card from 'react-bootstrap/esm/Card';
 import Container from 'react-bootstrap/esm/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-
 import {Pie} from 'react-chartjs-2';
 import Button from 'react-bootstrap/esm/Button';
 

@@ -43687,12 +43687,12 @@
         }
       },
       "links": {},
-      "address": "0xd6Da499B326978F0a92553A3EE3f11F1B3524BC5",
-      "transactionHash": "0xb2ff9dbcf808ca3e1eee8a90e31e17655cb4b326f8aab0566df45336025b07fd"
+      "address": "0x6B707D62bCd7feD1AAb755E9bf0300b6842a38eE",
+      "transactionHash": "0xffc56bfa7e5facc8fdcadc3aff8e705af898759588fdb8e3d029d48616b1e956"
     }
   },
   "schemaVersion": "3.4.1",
-  "updatedAt": "2021-08-04T15:24:41.157Z",
+  "updatedAt": "2021-08-05T01:24:39.328Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
