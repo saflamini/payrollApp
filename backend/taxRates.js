@@ -233,7 +233,6 @@ calculateFedWithholdingsHH(salary, interval, allowances) {
 
 },
 
-
 calculateStateWithholdings(salary, interval, state) {
     //placeholder - will vary by state
     let stateTax = 0.05;
@@ -241,7 +240,17 @@ calculateStateWithholdings(salary, interval, state) {
     return `$${((salary * (interval / 365)) * stateTax).toFixed(2)}`;
 },
 
+calculateBonusFedWithholdings(amount) {
+    let fedTotal;
+    fedTotal = (amount * 0.22);
+    return `$${fedTotal.toFixed(2)}`;
+},
 
+
+calculateBonusStateWithholdings(amount, state) {
+    let stateSupplementalTax = 0.05;
+    return `$${(amount * stateSupplementalTax).toFixed(2)}`;
+},
 
 calculateTotalFedWithholdings(salary, interval, filingStatus, allowances) {
     let fedTotal;
@@ -300,6 +309,31 @@ calculateSupplementalEmployeeTaxes(salary, interval, state) {
     return total;
 },
 
+calculateBonusEmployeeSS(bonusAmount) {
+    let ss;
+    if (bonusAmount >= 142800) {
+        ss = (142800 * this.supplementalTaxes["FICA_ss_employee"]);
+    }
+    else {
+        
+        ss = (bonusAmount * this.supplementalTaxes["FICA_ss_employee"]);
+    }
+    console.log("Employee SS: " + ss);
+    return `$${ss.toFixed(2)}`;
+},
+
+calculateBonusEmployerSS(bonusAmount) {
+    let ss;
+    if (bonusAmount >= 142800) {
+        ss = (142800 * this.supplementalTaxes["FICA_ss_employee"]);
+    }
+    else {
+        
+        ss = (bonusAmount * this.supplementalTaxes["FICA_ss_employee"]);
+    }
+    console.log("Employee SS: " + ss);
+    return `$${ss.toFixed(2)}`;
+},
 
 calculateEmployeeSS(salary, interval) {
     let ss;
@@ -315,13 +349,41 @@ calculateEmployeeSS(salary, interval) {
 },
 
 calculateEmployeeMedicare(salary, interval) {
-    let medicare = (salary * this.supplementalTaxes["FICA_medicare_employee"]) * (interval / 365);
+    let medicare = (salary * this.supplementalTaxes["FICA_medicare_employee"] * (interval / 365));
     let additional_medicare = 0;
     if (salary > 200000) {
-        additional_medicare = (salary * this.supplementalTaxes["additional_medicare"]) * (interval / 365);
+        additional_medicare = (salary * this.supplementalTaxes["additional_medicare"] * (interval / 365));
     }
     console.log("Employee total Medicare: " + (medicare + additional_medicare));
     return `$${(medicare + additional_medicare).toFixed(2)}`;
+},
+
+calculateBonusEmployeeMedicare(salary, bonusAmount) {
+    let medicare = (bonusAmount * this.supplementalTaxes["FICA_medicare_employee"]);
+    console.log('testing boi: ' + medicare);
+    let additional_medicare = 0;
+    if (salary > 200000) {
+        additional_medicare = (bonusAmount * this.supplementalTaxes["additional_medicare"]);
+    }
+    return `$${(medicare + additional_medicare).toFixed(2)}`;
+},
+
+calculateBonusEmployerMedicare(bonusAmount) {
+    let medicareEmployer = (bonusAmount * this.supplementalTaxes["FICA_medicare_employer"]);
+    console.log('testing homie: ' + bonusAmount)
+    console.log('testing boi boi boi: ' + medicareEmployer)
+
+    console.log("medicare employer: " + medicareEmployer);
+    return `$${medicareEmployer.toFixed(2)}`;
+},
+
+calculateBonusOverMillion(bonusAmount) {
+    let payOverMillion = 0;
+    if (bonusAmount > 1000000) {
+        payOverMillion = ((bonusAmount - 1000000) * this.supplementalTaxes["pay_over_million"]);
+    } 
+    console.log("Employee Pay Over $1M: " + payOverMillion);
+    return `$${payOverMillion.toFixed(2)}`;
 },
 
 calculateEmployeePayOverMillion(salary, interval) {
@@ -348,6 +410,19 @@ calculateNetPay(salary, interval, filingStatus, state, allowances) {
     return `$${((salary * (interval / 365)) - (adjustedFed + adjustedState + adjustedSupp)).toFixed(2)}`;
 },
 
+calculateNetBonusPay(amount, salary, state) {
+    let fed = this.calculateBonusFedWithholdings(amount);
+    let st = this.calculateBonusStateWithholdings(amount, state)
+    let ss = parseInt((this.calculateBonusEmployeeSS(amount)).substring(1), 10)
+    let med = parseInt((this.calculateBonusEmployeeMedicare(salary, amount)).substring(1), 10);
+    let payM = parseInt((this.calculateBonusOverMillion(amount)).substring(1), 10)
+    let adjustedFed = parseInt(fed.substring(1), 10);
+    let adjustedState = parseInt(st.substring(1), 10);
+    let adjustedSupp = ss + med + payM;
+    console.log(`Net Pay calculation $${(amount - (adjustedFed + adjustedState + adjustedSupp)).toFixed(2)}`)
+    return `$${(amount - (adjustedFed + adjustedState + adjustedSupp)).toFixed(2)}`;
+},
+
 calculateEmployeeContributions(salary, interval, filingStatus, state, allowances) {
     let fed = this.calculateTotalFedWithholdings(salary, interval, filingStatus, allowances);
     let st = this.calculateStateWithholdings(salary, interval, state)
@@ -360,6 +435,19 @@ calculateEmployeeContributions(salary, interval, filingStatus, state, allowances
     return `$${(adjustedFed + adjustedState + adjustedSupp).toFixed(2)}`;
 },
 
+calculateEmployeeBonusContributions(salary, amount, state) {
+    let fed = this.calculateBonusFedWithholdings(amount);
+    let st = this.calculateBonusStateWithholdings(amount, state);
+    let ss = parseInt((this.calculateBonusEmployeeSS(amount)).substring(1), 10)
+    let med = parseInt((this.calculateBonusEmployeeMedicare(salary, amount)).substring(1), 10);
+    let payM = parseInt((this.calculateBonusOverMillion(amount)).substring(1), 10)
+    let adjustedFed = parseInt(fed.substring(1), 10);
+    let adjustedState = parseInt(st.substring(1), 10);
+    let adjustedSupp = ss + med + payM;
+    console.log(`Employee contrib: $${(adjustedFed + adjustedState + adjustedSupp).toFixed(2)}`)
+    return `$${(adjustedFed + adjustedState + adjustedSupp).toFixed(2)}`;
+},
+
 calculateTotalEmployerCost(salary, interval, state) {
     let ss = parseFloat((this.calculateEmployerSS(salary, interval)).substring(1), 10);
     let med = parseFloat((this.calculateEmployerMedicare(salary, interval)).substring(1), 10);
@@ -368,7 +456,14 @@ calculateTotalEmployerCost(salary, interval, state) {
     return `$${(ss + med + futa + u + (salary * (interval / 365))).toFixed(2)}`;
 },
 
-
+calculateEmployeeBonusCost(salary, amount, state) {
+    let ss = parseFloat((this.calculateBonusEmployerSS(amount)).substring(1), 10);
+    let med = parseFloat((this.calculateBonusEmployerMedicare(amount)).substring(1), 10);
+    let futa = parseFloat((this.calculateBonusFUTA(amount)).substring(1), 10);
+    let u = parseFloat((this.calculateBonusEmployerStateUnemployment(amount, state)).substring(1), 10);
+    console.log(`employee b cost: $${(ss + med + futa + u + amount).toFixed(2)}`)
+    return `$${(ss + med + futa + u + amount).toFixed(2)}`;
+},
 
 //state will do nothing now, but will need later
 //need to visually show this doing something in app
@@ -424,9 +519,26 @@ calculateEmployerFUTA(salary, interval) {
     return `$${FUTA.toFixed(2)}`;
 },
 
+calculateBonusFUTA(bonusAmount) {
+    let FUTA = 0;
+    if (bonusAmount >= 7000) {
+        FUTA = (bonusAmount * this.supplementalTaxes["FUTA"]);
+    } else {
+        FUTA = (bonusAmount * this.supplementalTaxes["FUTA"]);
+    }
+    console.log("FUTA: " + FUTA);
+    return `$${FUTA.toFixed(2)}`;
+},
+
 calculateEmployerStateUnemployment(salary, interval, state) {
     //state will do nothing for now, just a placeholder
     let stateUnemployment = (salary * this.supplementalTaxes["state_unemployment"]) * (interval / 365);
+    console.log("State unemployement: " + stateUnemployment);
+    return `$${stateUnemployment.toFixed(2)}`;
+},
+
+calculateBonusEmployerStateUnemployment(bonusAmount, state) {
+    let stateUnemployment = (bonusAmount * this.supplementalTaxes["state_unemployment"]);
     console.log("State unemployement: " + stateUnemployment);
     return `$${stateUnemployment.toFixed(2)}`;
 }

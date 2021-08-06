@@ -120,17 +120,23 @@ class PaymentList extends Component {
     // }
 
     renderPayments() {
+        console.log(this.props)
+        console.log(this.props.paymentList[0])
+        
 
         console.log(this.props.paymentList)
         if (this.props.paymentList.length > 0) {
 
         return (
                 this.props.paymentList.map(payment => (
-                <tbody key={payment.employee_id}>{
+                   
+                <tbody key={payment.payment_date}>{
                    <EmployerPayment 
-                    fullName={payment.fullName}
+                    fullName={
+                        `${payment.first_name} ${payment.last_name}`
+                    }
                     employee_id={payment.employee_id}
-                    lastPaid={(new Date(payment.lastPaid * 1000)).toLocaleDateString()}
+                    payment_date={payment.payment_date}
                     gross_pay={payment.gross_pay}
                     federal_tax_withheld={payment.federal_tax_withheld}
                     state_tax_withheld={payment.state_tax_withheld}

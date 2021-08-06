@@ -24,11 +24,12 @@ class EmployerPayment extends Component {
 
     
     render() {
+        console.log((new Date(Number(this.props.payment_date)).toLocaleDateString()))
         return (
             <tr>
-                <td>{this.state.fullName}</td>
+                <td>{this.props.fullName}</td>
                 <td>{this.state.employee_id}</td>
-                <td>{this.state.lastPaid}</td>
+                <td>{(new Date(Number(this.props.payment_date))).toLocaleDateString()}</td>
                 <td>{this.state.gross_pay}</td>
                 <td>{this.state.federal_tax_withheld}</td>
                 <td>{this.state.state_tax_withheld}</td>
