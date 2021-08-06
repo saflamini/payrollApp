@@ -68,7 +68,6 @@ class Web3Setup extends Component {
             runningPayroll: false,
             paying: false,
             creatingEmployee: false,
-            payments: "",
             paymentList: []
         };
 
@@ -514,14 +513,16 @@ class Web3Setup extends Component {
         .then(this.getCompanyBalances())
     }
 
-    async addPaymentToDB(company_id, employee_id, salary, interval, state, filingstatus, allowances) {
+    async addPaymentToDB(first_name, last_name, company_id, employee_id, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType) {
         try {
-            const body = {company_id, employee_id, salary, interval, state, filingstatus, allowances};
+            const body = {first_name, last_name, company_id, employee_id, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType};
             const response = await fetch("http://localhost:5000/pay-employee", {
                 method: "POST",
                 headers: { "Content-Type": "application/json"},
                 body: JSON.stringify(body)
             });
+
+            console.log(response.data)
 
             // window.location = "/home";
 
@@ -540,9 +541,8 @@ class Web3Setup extends Component {
         }
         await this.state.companyContract.methods.payEmployee(address).send({from: this.state.account}).then(console.log)
 
-
-        await this.addPaymentToDB(this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances)
-        console.log('address ' + address)
+        await this.addPaymentToDB(employee.first_name, employee.last_name, this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances, 0, 'singlePayment')
+        console.log('address: ' + address)
         this.getCompany()
     }
 
@@ -554,7 +554,7 @@ class Web3Setup extends Component {
         for (let i = 0; i < this.state.roster.length; i++) {
             if (Date.now() >= this.state.roster[i].lastDayPaid + (this.state.roster[i].interval * 86400)) {
                 console.log(this.state.roster[i])
-                await this.addPaymentToDB(this.state.companyId, this.state.roster[i].id, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances);
+                await this.addPaymentToDB(this.state.roster[i].first_name, this.state.roster[i].last_name, this.state.companyId, this.state.roster[i].id, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances, 0, "payrollPayment");
             }
         }
     }
@@ -580,6 +580,7 @@ class Web3Setup extends Component {
     }
 
     async sendSinglePayment(employeeAddress, amount) {
+
         let currency;
         for (let i = 0; i < this.state.roster.length; i++) {
             if (this.state.roster[i].address == employeeAddress) {
@@ -596,10 +597,16 @@ class Web3Setup extends Component {
         }
 
         let payment = new BigNumber(amount).shiftedBy(decimals[currency]);
+        console.log(employee)
+        console.log(this.addPaymentToDB)
+
         await this.state.companyContract.methods.sendOneOffPayment(employeeAddress, payment).send({from: this.state.account}).then(console.log)
-        .then(await this.addPaymentToDB(this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances))
+        await this.addPaymentToDB(employee.first_name, employee.last_name, this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances, Number(amount), "supplementalPayment")
+
+        // await this.addPaymentToDB(employee.first_name, employee.last_name, this.state.companyId, employee.id, `$${amount}`, 365, employee.state, employee.filingstatus, employee.allowances).then(console.log)
         .then(this.getCompany());
         //include a loader here
+
     }
 
     renderPayrollModal() {
@@ -719,45 +726,67 @@ class Web3Setup extends Component {
 
     async getPayments() {
         let employerPaymentData = [];
-        let employeePayment;
     
         employerPaymentData = await this.getEmployerPaymentInfo();
+        // for (let i = 0; i < employerPaymentData.length; i++) {
+        //     let currentE;
 
-        let payments = [];
+        //     for (let i = 0; i < this.state.roster.length; i++) {
+        //         console.log(employerPaymentData[i])
+        //         if (employerPaymentData[i] !== undefined && employerPaymentData[i].employee_id == this.state.roster[i].id) {
+        //             currentE = this.state.roster[i];
+        //             console.log(currentE)
+        //             employerPaymentData[i].first_name = currentE.first_name;
+        //             employerPaymentData[i].last_name = currentE.last_name;
+        //         }
+        //     }
+                
+                
+            // }
 
-        if (employerPaymentData.length > 0 && employerPaymentData !== undefined) {
-            for (let i = 0; i < employerPaymentData.length; i++) {
-            console.log(this.state.roster[i]);
-            console.log(employerPaymentData[i])
-            employeePayment = await this.getEmployeePaymentInfo(this.state.roster[i].id);
-            console.log('employeePayment')
-            console.log(employeePayment[0])
-
-            if (this.state.roster[i] !== undefined && employeePayment[0] !== undefined && (employerPaymentData[i].employee_id === this.state.roster[i].id)) {
-                let e = {
-                    employer_ss_withheld: employerPaymentData[i].employer_ss_withheld,
-                    employer_medicare_withheld: employerPaymentData[i].employer_medicare_withheld,
-                    employer_futa_withheld: employerPaymentData[i].employer_futa_withheld,
-                    employer_state_u_withheld: employerPaymentData[i].employer_state_u_withheld,
-                    total_employer_cost: employerPaymentData[i].total_employer_cost,
-                    fullName: `${this.state.roster[i].first_name} ${this.state.roster[i].last_name}`,
-                    employee_id: this.state.roster[i].id,
-                    lastPaid: this.state.roster[i].lastDayPaid,
-                    gross_pay: employeePayment[0].gross_pay,
-                    federal_tax_withheld: employeePayment[0].federal_tax_withheld,
-                    state_tax_withheld: employeePayment[0].state_tax_withheld,
-                    ss_tax_withheld: employeePayment[0].ss_tax_withheld,
-                    medicare_tax_withheld: employeePayment[0].medicare_tax_withheld,
-                    net_pay: employeePayment[0].net_pay,
-                }
-                console.log(e)
-                payments.push(e)
-                }
-            }
-        } 
+        console.log(employerPaymentData)
         this.setState({
-            paymentList: payments
+            paymentList: employerPaymentData
         })
+
+    //     let payments = [];
+
+    //     for (let i = 0; i < this.state.roster[i].length; i++) {
+
+    //     if (employerPaymentData.length > 0 && employerPaymentData !== undefined) {
+    //         for (let i = 0; i < employerPaymentData.length; i++) {
+    //         console.log(this.state.roster[i]);
+    //         console.log(employerPaymentData[i])
+    //         employeePayment = await this.getEmployeePaymentInfo(this.state.roster[i].id);
+    //         console.log('employeePayment')
+    //         console.log(employeePayment[0])
+
+    //         if (this.state.roster[i] !== undefined && employeePayment[0] !== undefined && (employerPaymentData[i].employee_id === this.state.roster[i].id)) {
+    //             let e = {
+    //                 employer_ss_withheld: employerPaymentData[i].employer_ss_withheld,
+    //                 employer_medicare_withheld: employerPaymentData[i].employer_medicare_withheld,
+    //                 employer_futa_withheld: employerPaymentData[i].employer_futa_withheld,
+    //                 employer_state_u_withheld: employerPaymentData[i].employer_state_u_withheld,
+    //                 total_employer_cost: employerPaymentData[i].total_employer_cost,
+    //                 fullName: `${this.state.roster[i].first_name} ${this.state.roster[i].last_name}`,
+    //                 employee_id: this.state.roster[i].id,
+    //                 lastPaid: this.state.roster[i].lastDayPaid,
+    //                 gross_pay: employeePayment[0].gross_pay,
+    //                 federal_tax_withheld: employeePayment[0].federal_tax_withheld,
+    //                 state_tax_withheld: employeePayment[0].state_tax_withheld,
+    //                 ss_tax_withheld: employeePayment[0].ss_tax_withheld,
+    //                 medicare_tax_withheld: employeePayment[0].medicare_tax_withheld,
+    //                 net_pay: employeePayment[0].net_pay,
+    //             }
+    //             console.log(e)
+    //             payments.push(e)
+    //             }
+    //         }
+    //     } 
+    // }
+    //     this.setState({
+    //         paymentList: payments
+    //     })
     }
  
 

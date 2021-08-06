@@ -33,10 +33,13 @@ CREATE TABLE employees (
 --how best to represent numbers 
 --run calculations in the DB or in the server?
 
-CREATE TABLE employee_payments (
+CREATE TABLE payments (
+    first_name VARCHAR(150),
+    last_name VARCHAR(150),
     company_id INT,
     employee_id INT, 
     payment_date VARCHAR(150),
+    payment_type VARCHAR(30),
     gross_pay MONEY,
     federal_tax_withheld MONEY,
     state_tax_withheld MONEY,
@@ -44,21 +47,14 @@ CREATE TABLE employee_payments (
     medicare_tax_withheld MONEY,
     pay_over_million_tax_withheld MONEY,
     net_pay MONEY,
-    employee_taxes MONEY
-)
-
---can I link these to the employee_payments table?
---this is for individual payments per employee
-CREATE TABLE employer_payments (
-    company_id INT,
-    employee_id INT,
-    payment_date VARCHAR(150), 
+    employee_taxes MONEY,
     employer_ss_withheld MONEY,
     employer_medicare_withheld MONEY,
     employer_FUTA_withheld MONEY,
     employer_state_u_withheld MONEY,
     total_employer_cost MONEY
 )
+
 
 CREATE TABLE companies (
     company_id VARCHAR(255),
