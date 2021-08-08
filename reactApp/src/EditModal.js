@@ -84,8 +84,6 @@ sendUpdate() {
     let d = decimals[this.state.employeeObject.currency];
     console.log(this.state.employeeObject.currency)
     let num = new BigNumber(this.state.employeeObject.salary).shiftedBy(d);
-    console.log(num);
-    console.log('hi')
     let adjustedEmployeeObject = {
         address: this.state.employeeObject.address,
         salary: new BigNumber(this.state.employeeObject.salary).shiftedBy(d).c[0],

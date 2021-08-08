@@ -111,6 +111,7 @@ class Web3Setup extends Component {
         this.getEmployeePaymentInfo = this.getEmployeePaymentInfo.bind(this);
         this.getEmployerPaymentInfo = this.getEmployerPaymentInfo.bind(this);
         this.getPayments = this.getPayments.bind(this);
+        this.updateDBValue = this.updateDBValue.bind(this);
     }
 
 
@@ -281,6 +282,24 @@ class Web3Setup extends Component {
       }
   }
 
+  async updateDBValue(employeeId, attribute, newValue) {
+    try {
+        const body = {newValue}
+        const response = await fetch(`http://localhost:5000/edit-employee/${employeeId}/${attribute}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        const jsonData = await response.json();
+
+        // console.log(jsonData);
+        return jsonData;
+
+      } catch (err) {
+          console.error(err.message)
+      }
+  }
+
 //call company contract
     async getEmployeeArray() {
         
@@ -378,7 +397,9 @@ class Web3Setup extends Component {
     }
 
     handleModalUpdate(employeeObject) {
+
         let addr = employeeObject.address;
+        console.log(employeeObject)
         let emp;
         for (let i = 0; i < this.state.roster.length; i++) {
             if (this.state.roster[i].address === addr) {
@@ -430,10 +451,23 @@ class Web3Setup extends Component {
         // .then(await this.addCompanyToDB(this.state.companyId, this.state.account, this.state.companyAddress, this.state.company))
     }
 
+
+
     //for all of these - call the relevant company contract
     async updateInterval(address, newInterval) {
+        console.log('newInt: ' + newInterval)
+
         await this.state.companyContract.methods.editEmployeeInterval(address, newInterval).send({from: this.state.account})
-        .then(console.log)
+        console.log('boi!')
+        let employeeId;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == address) {
+                employeeId = this.state.roster[i].id;
+                break;
+            }
+        }
+        console.log(employeeId)
+        await this.updateDBValue(employeeId, "interval", newInterval)
         .then(this.getEmployeeArray())
     }
 
@@ -447,9 +481,22 @@ class Web3Setup extends Component {
                 break;
             }
         }
-        // let newSal = new BigNumber(newSalary).shiftedBy(decimals[assetSymbols[employeeCurrency]]);
+        let newSal = new BigNumber(newSalary).shiftedBy(decimals[assetSymbols[employeeCurrency]] * -1);
+
         await this.state.companyContract.methods.editEmployeeSalary(address, newSalary).send({from: this.state.account})
-        .then(console.log)
+
+        let employeeId;
+        for (let i = 0; i < this.state.roster.length; i++) {
+            if (this.state.roster[i].address == address) {
+                employeeId = this.state.roster[i].id;
+                break;
+            }
+        }
+        console.log(employeeId)
+        console.log(newSalary)
+        console.log(newSal)
+        console.log(decimals[assetSymbols[employeeCurrency]])
+        await this.updateDBValue(employeeId, "salary", newSal.c[0])
         .then(this.getEmployeeArray())
        
     }

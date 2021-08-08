@@ -212,9 +212,10 @@ app.put("/edit-employee/:id/:item", async (req, res) => {
     try {
         const {id, item} = req.params;
         const {newValue} = req.body;
-        console.log(item);
         const updatedValue = await pool.query(`UPDATE employees SET ${item.toString()} = $1 WHERE employee_id = $2`, 
         [newValue, id]);
+
+        console.log(updatedValue.rows[0])
 
         res.json("employee updated")
 
@@ -242,9 +243,9 @@ app.delete("/delete-employee/:id", async (req, res) => {
     try {
         const {id} = req.params;
         const deleteEmployee = await pool.query(
-            "DELETE FROM employees WHERE employee_id = $1", [id]
+            "DELETE FROM employees WHERE employee_id = $1", [Number(id)]
         );
-        res.json("company has been deleted")
+        res.json("employee has been deleted")
 
     } catch (err) {
         console.error(err.message)
