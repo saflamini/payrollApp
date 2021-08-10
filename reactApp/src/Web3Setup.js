@@ -33,7 +33,7 @@ import Payments from "./Payments";
 // import { Contract } from 'web3-eth-contract';
 // import { payrollAddress } from './config';
 // import EmployeeForm from './EmployeeForm';
-// import detectEthereumProvider from '@metamask/detect-provider';
+import detectEthereumProvider from '@metamask/detect-provider';
 // import { v4 as uuidv4 } from 'uuid';
 
 //need to run all state and key operations here
@@ -42,6 +42,8 @@ import Payments from "./Payments";
 //Route 1-path to /home - render home
 //Route 2-path to /fundpage - render fundpage
 //Route 3-path to /manageroster - render that page.... and so on
+
+
 
 
 
@@ -117,6 +119,8 @@ class Web3Setup extends Component {
 
     componentDidMount() {
         this.setup()
+        
+        
     }
 
     
@@ -144,6 +148,9 @@ class Web3Setup extends Component {
 
 
     async setup() {
+
+        let acctsBoi = await web3.eth
+        console.log(acctsBoi);
 
         // This function detects most providers injected at window.ethereum
         // const provider = await detectEthereumProvider();
@@ -304,7 +311,7 @@ class Web3Setup extends Component {
     async getEmployeeArray() {
         
         // console.log(this.state.companyContract)
-        
+        console.log(web3.currentProvider.host)
         let employeeArray = await this.state.companyContract.methods.getEmployeesByCompany().call({from: this.state.account});
         console.log(employeeArray)
         if (employeeArray.length > 0) {
@@ -350,6 +357,7 @@ class Web3Setup extends Component {
     //call company contract
     //split up by asset type
     async getCompanyBalances() {
+        console.log(this.state.account)
         let usdcBal = await USDC.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
         let daiBal = await DAI.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
         let usdtBal = await USDT.methods.balanceOf(this.state.companyAddress).call({from: this.state.account});
@@ -560,10 +568,10 @@ class Web3Setup extends Component {
         .then(this.getCompanyBalances())
     }
 
-    async addPaymentToDB(first_name, last_name, company_id, employee_id, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType) {
+    async addPaymentToDB(first_name, last_name, eth_address, company_id, employee_id, currency_decimals, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType) {
         try {
-            const body = {first_name, last_name, company_id, employee_id, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType};
-            const response = await fetch("http://localhost:5000/pay-employee", {
+            const body = {first_name, last_name, eth_address, company_id, employee_id, currency_decimals, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType};
+            const response = await fetch(`http://localhost:5000/pay-employee/${this.state.companyAddress}/${this.state.account}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json"},
                 body: JSON.stringify(body)
@@ -586,9 +594,19 @@ class Web3Setup extends Component {
                 break;
             }
         }
-        await this.state.companyContract.methods.payEmployee(address).send({from: this.state.account}).then(console.log)
-
-        await this.addPaymentToDB(employee.first_name, employee.last_name, this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances, 0, 'singlePayment')
+        // await this.state.companyContract.methods.payEmployee(address).send({from: this.state.account}).then(console.log)
+        let currency = employee.currency;
+        let currencyDecimals = decimals[assetSymbols[currency]];
+       
+        console.log("co " + this.state.companyId)
+        console.log("employee Id " + employee.id)
+        console.log("decimals: " +currencyDecimals)
+        console.log("sal: " + employee.salary)
+        console.log("int " + employee.interval)
+        console.log("state " + employee.state)
+        console.log("status " + employee.filingstatus)
+        console.log("allows " + employee.allowances);
+        await this.addPaymentToDB(employee.first_name, employee.last_name, employee.address, Number(this.state.companyId), employee.id, currencyDecimals, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances, 0, 'singlePayment')
         console.log('address: ' + address)
         this.getCompany()
     }
@@ -601,18 +619,24 @@ class Web3Setup extends Component {
         for (let i = 0; i < this.state.roster.length; i++) {
             if (Date.now() >= this.state.roster[i].lastDayPaid + (this.state.roster[i].interval * 86400)) {
                 console.log(this.state.roster[i])
-                await this.addPaymentToDB(this.state.roster[i].first_name, this.state.roster[i].last_name, this.state.companyId, this.state.roster[i].id, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances, 0, "payrollPayment");
+                let currencyDecimals = decimals[assetSymbols[this.state.roster[i].currency]]
+                await this.addPaymentToDB(this.state.roster[i].first_name, this.state.roster[i].last_name, this.state.roster[i].address, this.state.roster[i].address, this.state.companyId, this.state.roster[i].id, currencyDecimals, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances, 0, "payrollPayment");
             }
         }
     }
 
-    //issues here
+    //issues here?
     async runPayroll() {
         console.log(this.state.account);
         try {
+
+            for (let i = 0; i < this.state.roster.length; i++) {
+                await this.payEmployee(this.state.roster[i].address)
+                // await this.state.companyContract.methods.payEmployee(this.state.roster[i].address).send({from: this.state.account, gas: 6721975}).then(console.log)
+            } 
+            // await this.state.companyContract.methods.runPayroll().send({from: this.state.account, gas: 6721975}).then(console.log)
+
             await this.addPayrollPaymentsToDB()
-            await this.state.companyContract.methods.runPayroll().send({from: this.state.account, gas: 6721975})
-            .then(console.log)
             .then(this.setState({runningPayroll: false}))
             .then(this.getCompany())
         } catch (err) {
@@ -643,12 +667,15 @@ class Web3Setup extends Component {
             }
         }
 
-        let payment = new BigNumber(amount).shiftedBy(decimals[currency]);
-        console.log(employee)
-        console.log(this.addPaymentToDB)
+        // let payment = new BigNumber(amount).shiftedBy(decimals[currency]);
+        let currencyDecimals = decimals[currency];
+        console.log(Number(amount).toFixed(2));
 
-        await this.state.companyContract.methods.sendOneOffPayment(employeeAddress, payment).send({from: this.state.account}).then(console.log)
-        await this.addPaymentToDB(employee.first_name, employee.last_name, this.state.companyId, employee.id, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances, Number(amount), "supplementalPayment")
+        // await this.state.companyContract.methods.sendOneOffPayment(employeeAddress, payment).send({from: this.state.account}).then(console.log)
+        let paymentType = "supplementalPayment";
+        console.log("currency " + currency)
+        console.log("decimals " + currencyDecimals)
+        await this.addPaymentToDB(employee.first_name, employee.last_name, employee.address, this.state.companyId, employee.id, currencyDecimals, employee.salary, employee.interval, employee.state, employee.filingstatus, employee.allowances, Number(amount), paymentType)
 
         // await this.addPaymentToDB(employee.first_name, employee.last_name, this.state.companyId, employee.id, `$${amount}`, 365, employee.state, employee.filingstatus, employee.allowances).then(console.log)
         .then(this.getCompany());

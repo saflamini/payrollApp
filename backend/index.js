@@ -3,6 +3,11 @@ const app = express();
 const cors = require('cors')
 const pool = require('./db');
 const taxRates = require("./taxRates")
+const Web3 = require('web3');
+const web3 = new Web3("http://127.0.0.1:8545")
+const backendConfig = require("./backendConfig");
+const BigNumber = require('bignumber.js');
+
 
 // console.log(taxRates.calculateEmployerSS(14000))
 
@@ -80,13 +85,14 @@ app.post("/create-company", async (req, res) => {
 })
 
 //create a payment - will generate an employer and employee payment
-app.post("/pay-employee", async (req, res) => {
+app.post("/pay-employee/:coAddress/:account", async (req, res) => {
     try {
         // const {id} = req.params;
         // const {employee_id, payment_date, gross_pay, federal_tax_withheld, state_tax_withheld, ss_tax_withheld, medicare_tax_withheld, pay_over_million_tax_withheld, net_pay
         // , company_id, employer_ss_withheld, employer_medicare_withheld, employer_FUTA_withheld, employer_state_u_withheld} = req.body;
-        
-        const {first_name, last_name, company_id, employee_id, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType} = req.body;
+        const {coAddress, account} = req.params;
+
+        const {first_name, last_name, eth_address, company_id, employee_id, currency_decimals, salary, interval, state, filingstatus, allowances, bonusAmount, paymentType} = req.body;
 
         let gross_pay;
         let federal_tax_withheld;
@@ -103,7 +109,7 @@ app.post("/pay-employee", async (req, res) => {
 
         if (bonusAmount > 0) {
             gross_pay = (`$${bonusAmount.toFixed(2)}`);
-            console.log(bonusAmount)
+            console.log(gross_pay)
             federal_tax_withheld = taxRates.calculateBonusFedWithholdings(bonusAmount);
             state_tax_withheld = taxRates.calculateBonusStateWithholdings(bonusAmount, state);
             ss_tax_withheld = taxRates.calculateBonusEmployeeSS(bonusAmount);
@@ -135,35 +141,68 @@ app.post("/pay-employee", async (req, res) => {
         // const payment_date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
         const payment_date = Date.now() //- (86400 * 15);
 
-        // const federal_tax_withheld = taxRates.calculateTotalFedWithholdings(salary, interval, filingstatus, allowances);
-        // const state_tax_withheld = taxRates.calculateStateWithholdings(salary, interval, state);
-        // const ss_tax_withheld = taxRates.calculateEmployeeSS(salary, interval);
-        // const medicare_tax_withheld = taxRates.calculateEmployeeMedicare(salary, interval);
-        // const pay_over_million_tax_withheld = taxRates.calculateEmployeePayOverMillion(salary, interval);
-        // const employer_ss_withheld = taxRates.calculateEmployerSS(salary, interval);
-        // const employer_medicare_withheld = taxRates.calculateEmployerMedicare(salary, interval);
-        // const employer_FUTA_withheld = taxRates.calculateEmployerFUTA(salary, interval);
-        // const employer_state_u_withheld = taxRates.calculateEmployerStateUnemployment(salary, interval, state);
-        // const net_pay = taxRates.calculateNetPay(salary, interval, filingstatus, state, allowances);
-        // const total_employer_cost = taxRates.calculateTotalEmployerCost(salary, interval, state)
-        // const employee_taxes = taxRates.calculateEmployeeContributions(salary, interval, filingstatus, state, allowances);
-        // const net_pay = `$${(gross_pay - (federal_tax_withheld + state_tax_withheld + ss_tax_withheld + medicare_tax_withheld + pay_over_million_tax_withheld)).toFixed(2)}`;
-        // console.log('Payment Date: ' + payment_date);
-        // console.log('Employee Gross: ' + gross_pay);
-        // console.log('Employee Fed ' + federal_tax_withheld);
-        // console.log('Employee State tax ' + state_tax_withheld);
-        // console.log('Employee ss ' + ss_tax_withheld);
-        // console.log('Employee Med ' + medicare_tax_withheld);
-        // console.log('Pay > $1M tax: ' + pay_over_million_tax_withheld);
-        // console.log('Employer SS: ' + employer_ss_withheld);
-        // console.log('Employer Med: ' + employer_medicare_withheld);
-        // console.log('FUTA: ' + employer_FUTA_withheld);
-        // console.log('Employer State U: ' + employer_state_u_withheld);
-        // console.log('Net Pay: ' + net_pay)
+        let addr = web3.utils.toChecksumAddress(coAddress);
+        let acct = web3.utils.toChecksumAddress(account);
+        let eth_addr = web3.utils.toChecksumAddress(eth_address);
+        // console.log(web3.eth.Contract)
+        const CompanyContract = new web3.eth.Contract(backendConfig.CompanyABI, addr);
+        // console.log(CompanyContract)
+
+        //check bignumber strings and checksum addresses
+        let gp = Number(gross_pay.slice(1))
+        let np = Number(net_pay.slice(1));
+        let employeeWithholdings = (gp - np);
+        let d = currency_decimals;
+        console.log(currency_decimals)
+
+        console.log("decimals " + d)
+        let eWithholdings = (new BigNumber(employeeWithholdings)).shiftedBy(currency_decimals);
+        console.log("Gross Pay: " + gp);
+        console.log("Net Pay: " + np)
+        console.log("all withholdings: " + employeeWithholdings);
+
+        console.log("EmployeeWithholdings: " + eWithholdings.c[0])
+
+
+        //now - account for currency type and create sep function for paying entire payroll
+
+        if (paymentType == "singlePayment") {
+            console.log('single')
+            await CompanyContract.methods.payEmployee(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log);
+            
+        }
+
+        else if (paymentType == "earlyPay") {
+            console.log('earlyPay');
+            await CompanyContract.methods.paidEarly(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log)
+        }
+        
+        else if (paymentType == "supplementalPayment") {
+            console.log(gp)
+            console.log(np)
+            console.log(currency_decimals)
+            let pmt;
+
+            if (currency_decimals > 6) {
+                pmt = web3.utils.toWei(gp.toString(), "ether");
+                eWithholdings = web3.utils.toWei(employeeWithholdings.toString(), "ether");
+                console.log(pmt);
+                console.log(eWithholdings)
+                await CompanyContract.methods.sendOneOffPayment(eth_addr, pmt, eWithholdings).send({from: acct, gas: 6721975}).then(console.log)
+            }
+
+            else {
+                pmt = (new BigNumber(gp)).shiftedBy(currency_decimals);
+                console.log(pmt.c[0]);
+                console.log(eWithholdings.c[0])
+                await CompanyContract.methods.sendOneOffPayment(eth_addr, pmt.c[0], eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log)
+            }
+            
+        }        
         
         const payment = await pool.query(
-        "INSERT INTO payments (first_name, last_name, company_id, employee_id, payment_date, payment_type, gross_pay, federal_tax_withheld, state_tax_withheld, ss_tax_withheld, medicare_tax_withheld, pay_over_million_tax_withheld, net_pay, employee_taxes, employer_ss_withheld, employer_medicare_withheld, employer_FUTA_withheld, employer_state_u_withheld, total_employer_cost) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *",
-        [first_name, last_name, company_id, employee_id, payment_date, paymentType, gross_pay, federal_tax_withheld, state_tax_withheld, ss_tax_withheld, medicare_tax_withheld, pay_over_million_tax_withheld, net_pay, employee_taxes, employer_ss_withheld, employer_medicare_withheld, employer_FUTA_withheld, employer_state_u_withheld, total_employer_cost]);
+        "INSERT INTO payments (first_name, last_name, eth_address, company_id, employee_id, payment_date, payment_type, currency_decimals, gross_pay, federal_tax_withheld, state_tax_withheld, ss_tax_withheld, medicare_tax_withheld, pay_over_million_tax_withheld, net_pay, employee_taxes, employer_ss_withheld, employer_medicare_withheld, employer_FUTA_withheld, employer_state_u_withheld, total_employer_cost) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *",
+        [first_name, last_name, eth_address, company_id, employee_id, payment_date, paymentType, currency_decimals, gross_pay, federal_tax_withheld, state_tax_withheld, ss_tax_withheld, medicare_tax_withheld, pay_over_million_tax_withheld, net_pay, employee_taxes, employer_ss_withheld, employer_medicare_withheld, employer_FUTA_withheld, employer_state_u_withheld, total_employer_cost]);
         console.log(payment.rows[0]);
 
         res.json(payment.rows)
@@ -183,6 +222,7 @@ app.get("/employer-payments/:company_id", async (req, res) => {
         [company_id, pay_period]);
 
         console.log(paymentList.rows[0])
+       
         res.json(paymentList.rows);
         
 

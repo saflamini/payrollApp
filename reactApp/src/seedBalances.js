@@ -317,22 +317,22 @@ export const USDT = new web3.eth.Contract(ERC20ABI, USDTAddress)
   const whale = "0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503"
   //change these two for each restart
   // const user = ""; //account 10
-  const user2 = "0xBAdE2d2b216F8F54708B0Cc11C1f920484D6f3a3" //account 9
-  const companyAddress = "0x36018713fa51FDBEAC4a51122Db9e4C5cE4F4863"
+  const user2 = "0x1b7903443F694cBA205D391dE269DDf20957fef9" //account 9
+  const companyAddress = "0x36B165D740D41f3dA796643C9E7987B55f04c170"
   
 
 
-  // USDC.methods.transfer(user2, (new BigNumber(1000000).shiftedBy(6))).send({from: whale}).then(console.log);
-  // DAI.methods.transfer(user2, (new BigNumber(1000000).shiftedBy(18))).send({from: whale}).then(console.log);
-  // USDT.methods.transfer(user2, (new BigNumber(1000000).shiftedBy(6))).send({from: whale}).then(console.log);
+  // USDC.methods.transfer(user2, (new BigNumber(10000000).shiftedBy(6))).send({from: whale}).then(console.log);
+  // DAI.methods.transfer(user2, (new BigNumber(10000000).shiftedBy(18))).send({from: whale}).then(console.log);
+  // USDT.methods.transfer(user2, (new BigNumber(10000000).shiftedBy(6))).send({from: whale}).then(console.log);
 
   // USDC.methods.approve(companyAddress, 900000000000).send({from: whale}).then(console.log);
   // DAI.methods.approve(companyAddress, 900000000000).send({from: whale}).then(console.log);
   // USDT.methods.approve(companyAddress, 900000000000).send({from: whale}).then(console.log);
 
-  // USDC.methods.approve(companyAddress, (new BigNumber(1000000).shiftedBy(6))).send({from: user2,  gas: 6721975}).then(console.log);
-  // DAI.methods.approve(companyAddress, (new BigNumber(1000000).shiftedBy(18))).send({from: user2,  gas: 6721975}).then(console.log);
-  //   USDT.methods.approve(companyAddress, (new BigNumber(1000000).shiftedBy(6))).send({from: user2,  gas: 6721975}).then(console.log);
+  // USDC.methods.approve(companyAddress, (new BigNumber(10000000).shiftedBy(6))).send({from: user2,  gas: 6721975}).then(console.log);
+  // DAI.methods.approve(companyAddress, (new BigNumber(10000000).shiftedBy(18))).send({from: user2,  gas: 6721975}).then(console.log);
+  //   USDT.methods.approve(companyAddress, (new BigNumber(10000000).shiftedBy(6))).send({from: user2,  gas: 6721975}).then(console.log);
 
 // console.log(USDT.methods)
 // USDT.methods.balanceOf(companyAddress).call().then(console.log);

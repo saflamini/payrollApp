@@ -199,64 +199,65 @@ contract Company is Ownable {
 
 // run payroll across the entire company
 //this function is still reverting on front end
-    function runPayroll() public onlyOwner {
-        //looping through employeelist
-        for (uint i; i < employeeList.length; i++) {
-            //pulling out an address for each employee - prob not needed
-            address payable _address = employeeList[i].employeeAddress;
-            //defining a payment interval to multiply payment by
-            uint paymentInterval;
-            //use library to create a payment interval to multiply by
-            paymentInterval = PRBMathUD60x18.div(employees[_address].interval, 365);
-            //convert interval days into seconds
-            uint intervalSeconds = employees[_address].interval * 86400;
+    // function runPayroll() public onlyOwner {
+    //     //looping through employeelist
+    //     for (uint i; i < employeeList.length; i++) {
+    //         //pulling out an address for each employee - prob not needed
+    //         address payable _address = employeeList[i].employeeAddress;
+    //         //defining a payment interval to multiply payment by
+    //         uint paymentInterval;
+    //         //use library to create a payment interval to multiply by
+    //         paymentInterval = PRBMathUD60x18.div(employees[_address].interval, 365);
+    //         //convert interval days into seconds
+    //         uint intervalSeconds = employees[_address].interval * 86400;
           
 
-            //require last payment date to be at least interval days ago
-            //last day paid + seconds since last day paid must be at least interval amount of time ago
-            //it must be longer than interval days since the employee has been paid
-            if (block.timestamp >= employees[_address].lastDayPaid + intervalSeconds) {
-                //if the above is true, then
-                //get the currency address of the employee and create the token contract insgtance
-            address currency = employees[_address].currency;
-            ERC20 tokenContract = ERC20(currency);
+    //         //require last payment date to be at least interval days ago
+    //         //last day paid + seconds since last day paid must be at least interval amount of time ago
+    //         //it must be longer than interval days since the employee has been paid
+    //         if (block.timestamp >= employees[_address].lastDayPaid + intervalSeconds) {
+    //             //if the above is true, then
+    //             //get the currency address of the employee and create the token contract insgtance
+    //         address currency = employees[_address].currency;
+    //         ERC20 tokenContract = ERC20(currency);
 
-            //create variable for payment
-            uint payment;
+    //         //create variable for payment
+    //         uint payment;
 
-            //if a protocol fee
-            if (protocolFee > 0) {
-            //if protocol fee is turned on, send fee back to protocol before issuing payment
-            //consider switching order of operations here, or simply holding it in a separate variable to be claimed in bulk by the network
-            //would be ideal to NOT pass this gas payment along to users
-            uint feeTotal;
+    //         //if a protocol fee
+    //         if (protocolFee > 0) {
+    //         //if protocol fee is turned on, send fee back to protocol before issuing payment
+    //         //consider switching order of operations here, or simply holding it in a separate variable to be claimed in bulk by the network
+    //         //would be ideal to NOT pass this gas payment along to users
+    //         uint feeTotal;
+
+    //         //this function is a problem
+    //         uint grossPayment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
+    //         feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
+    //         payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
+    //         tokenContract.safeTransfer(protocolVault, feeTotal);
+    //         }
+
+    //         //use library to multiply by fraction
+    //         if (protocolFee == 0) {
+    //         payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
+    //         } 
+
+    //         address payable payee = employees[_address].employeeAddress;
+    //         erc20Balances[currency] -= payment;
+
+    //         //set lastdaypaid to now
+    //         employees[_address].lastDayPaid = block.timestamp;
+    //         tokenContract.safeTransfer(payee, payment);
+    //         //add the payment amount to total earnings of the employee
+    //         emit employeePaid(_address, currency, payment);
+    //         }
             
-            uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
-            feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
-            payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
-            tokenContract.safeTransfer(protocolVault, feeTotal);
-            }
-
-            //use library to multiply by fraction
-            if (protocolFee == 0) {
-            payment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
-            } 
-
-            address payable payee = employees[_address].employeeAddress;
-            erc20Balances[currency] -= payment;
-
-            //set lastdaypaid to now
-            employees[_address].lastDayPaid = block.timestamp;
-            tokenContract.safeTransfer(payee, payment);
-            //add the payment amount to total earnings of the employee
-            emit employeePaid(_address, currency, payment);
-            }
-            
-        }
-    }
+    //     }
+    // }
 
     // //let an employee to call this function to receive their pay early
-    function paidEarly(address _address) public {
+    function paidEarly(address _address, uint _withholdings) public {
         //for now, the earlyWithdrawal fee is kept by the employer
         require(_address == msg.sender, "this function may only be called by the respective employee");
         // uint paymentInterval = employees[_address].interval;
@@ -279,13 +280,14 @@ contract Company is Ownable {
             //would be ideal to NOT pass this gas payment along to users
             uint feeTotal;
             // check this math, may need to use safeMath or recalculate
-            uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
+            
+            uint grossPayment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
             //multiply by 1% in solidity, and subtract from payment
+            //this 1% is taken off of net pay instead of gross pay
             uint earlyWithdrawalFee = grossPayment * 1 / 100;
             uint protocolFeeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
 
             feeTotal = SafeMath.add(protocolFeeTotal, earlyWithdrawalFee);
-            // payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
             payment = SafeMath.sub(grossPayment, feeTotal);
 
             tokenContract.safeTransfer(protocolVault, feeTotal);
@@ -294,7 +296,7 @@ contract Company is Ownable {
         //use library to multiply by fraction
         if (protocolFee == 0) {
         //add the actual amount
-        uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
+        uint grossPayment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
         uint earlyWithdrawalFee = grossPayment * 1 / 100;
         // uint earlyWithdrawalFee = PRBMathUD60x18.mul(grossPayment, withdrawalFee);
 
@@ -318,7 +320,8 @@ contract Company is Ownable {
 
 
 //run payment for a single employee
-    function payEmployee(address _address) public onlyOwner{
+//add withholdings as a param
+    function payEmployee(address _address, uint _withholdings) public onlyOwner{
     //these payment intervals and amounts will be very important for our whole application.
 
         uint paymentInterval;
@@ -344,7 +347,7 @@ contract Company is Ownable {
             //would be ideal to NOT pass this gas payment along to users
             uint feeTotal;
             // check this math, may need to use safeMath or recalculate
-            uint grossPayment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
+            uint grossPayment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
             feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
             payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
             tokenContract.safeTransfer(protocolVault, feeTotal);
@@ -352,7 +355,7 @@ contract Company is Ownable {
 
         //use library to multiply by fraction
         if (protocolFee == 0) {
-        payment = PRBMathUD60x18.mul(employees[_address].salary, paymentInterval);
+        payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
         } 
 
         address payable payee = employees[_address].employeeAddress;
@@ -367,7 +370,7 @@ contract Company is Ownable {
     }
 
     //pay employee one off payment - in event of user error or bonus
-    function sendOneOffPayment(address _address, uint _amount) public onlyOwner {
+    function sendOneOffPayment(address _address, uint _amount, uint _withholdings) public onlyOwner {
 
         address currency = employees[_address].currency;
         ERC20 tokenContract = ERC20(currency);
@@ -381,13 +384,15 @@ contract Company is Ownable {
             uint feeTotal;
             // check this math, may need to use safeMath or recalculate
             feeTotal = protocolFee;
-            payment = SafeMath.sub(_amount, feeTotal);
+            //_amount - protocol fee - withholdings for tax
+            payment = SafeMath.sub(SafeMath.sub(_amount, feeTotal), _withholdings);
             tokenContract.safeTransfer(protocolVault, feeTotal);
         }
 
         //use library to multiply by fraction
         if (protocolFee == 0) {
-        payment = _amount;
+        //if no proto fee, subtract only amount and withholdings
+            payment = SafeMath.sub(_amount, _withholdings);
         } 
 
         address payable payee = employees[_address].employeeAddress;

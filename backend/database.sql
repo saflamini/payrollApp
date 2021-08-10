@@ -36,10 +36,12 @@ CREATE TABLE employees (
 CREATE TABLE payments (
     first_name VARCHAR(150),
     last_name VARCHAR(150),
+    eth_address VARCHAR(44),
     company_id INT,
     employee_id INT, 
     payment_date VARCHAR(150),
     payment_type VARCHAR(30),
+    currency_decimals INT, 
     gross_pay MONEY,
     federal_tax_withheld MONEY,
     state_tax_withheld MONEY,
