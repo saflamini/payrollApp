@@ -168,22 +168,75 @@ app.post("/pay-employee/:coAddress/:account", async (req, res) => {
 
         if (paymentType == "singlePayment") {
             console.log('single')
-            await CompanyContract.methods.payEmployee(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log);
-            
+            console.log(currency_decimals == 18)
+
+            if (currency_decimals == 18) {
+                pmt = web3.utils.toWei(gp.toString(), "ether");
+                eWithholdings = web3.utils.toWei(employeeWithholdings.toString(), "ether");
+                console.log(pmt);
+                console.log(eWithholdings)
+                console.log(eth_addr)
+                await CompanyContract.methods.payEmployee(eth_addr, eWithholdings).send({from: acct, gas: 6721975}).then(console.log);
+            }
+
+            else {
+                pmt = (new BigNumber(gp)).shiftedBy(currency_decimals);
+                console.log(pmt.c[0]);
+                console.log(eWithholdings.c[0])
+                await CompanyContract.methods.payEmployee(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log);
+
+            }
+        }
+
+        if (paymentType == "payrollPayment") {
+            console.log('single')
+            console.log(currency_decimals == 18)
+
+            if (currency_decimals == 18) {
+                pmt = web3.utils.toWei(gp.toString(), "ether");
+                eWithholdings = web3.utils.toWei(employeeWithholdings.toString(), "ether");
+                console.log(pmt);
+                console.log(eWithholdings)
+                console.log(eth_addr)
+                await CompanyContract.methods.payEmployee(eth_addr, eWithholdings).send({from: acct, gas: 6721975}).then(console.log);
+            }
+
+            else {
+                pmt = (new BigNumber(gp)).shiftedBy(currency_decimals);
+                console.log(pmt.c[0]);
+                console.log(eWithholdings.c[0])
+                await CompanyContract.methods.payEmployee(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log);
+
+            }
         }
 
         else if (paymentType == "earlyPay") {
             console.log('earlyPay');
-            await CompanyContract.methods.paidEarly(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log)
+
+            if (currency_decimals == 18) {
+                pmt = web3.utils.toWei(gp.toString(), "ether");
+                eWithholdings = web3.utils.toWei(employeeWithholdings.toString(), "ether");
+                console.log(pmt);
+                console.log(eWithholdings)
+                await CompanyContract.methods.paidEarly(eth_addr, eWithholdings).send({from: acct, gas: 6721975}).then(console.log)
+            }
+
+            else {
+                pmt = (new BigNumber(gp)).shiftedBy(currency_decimals);
+                console.log(pmt.c[0]);
+                console.log(eWithholdings.c[0])
+                await CompanyContract.methods.paidEarly(eth_addr, eWithholdings.c[0]).send({from: acct, gas: 6721975}).then(console.log)
+            }
+
         }
-        
+
         else if (paymentType == "supplementalPayment") {
             console.log(gp)
             console.log(np)
             console.log(currency_decimals)
             let pmt;
 
-            if (currency_decimals > 6) {
+            if (currency_decimals == 18) {
                 pmt = web3.utils.toWei(gp.toString(), "ether");
                 eWithholdings = web3.utils.toWei(employeeWithholdings.toString(), "ether");
                 console.log(pmt);

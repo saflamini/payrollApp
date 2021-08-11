@@ -616,11 +616,13 @@ class Web3Setup extends Component {
         //if (block.timestamp >= employees[_address].lastDayPaid + intervalSeconds)
         //if now is >= last day paid + (interval * 365)
         // add a standard payroll payment to the database
+        console.log(this.state.roster)
         for (let i = 0; i < this.state.roster.length; i++) {
             if (Date.now() >= this.state.roster[i].lastDayPaid + (this.state.roster[i].interval * 86400)) {
                 console.log(this.state.roster[i])
                 let currencyDecimals = decimals[assetSymbols[this.state.roster[i].currency]]
-                await this.addPaymentToDB(this.state.roster[i].first_name, this.state.roster[i].last_name, this.state.roster[i].address, this.state.roster[i].address, this.state.companyId, this.state.roster[i].id, currencyDecimals, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances, 0, "payrollPayment");
+                console.log(currencyDecimals)
+                await this.addPaymentToDB(this.state.roster[i].first_name, this.state.roster[i].last_name, this.state.roster[i].address, this.state.companyId, this.state.roster[i].id, currencyDecimals, this.state.roster[i].salary, this.state.roster[i].interval, this.state.roster[i].state, this.state.roster[i].filingstatus, this.state.roster[i].allowances, 0, "payrollPayment");
             }
         }
     }
@@ -630,10 +632,10 @@ class Web3Setup extends Component {
         console.log(this.state.account);
         try {
 
-            for (let i = 0; i < this.state.roster.length; i++) {
-                await this.payEmployee(this.state.roster[i].address)
+            // for (let i = 0; i < this.state.roster.length; i++) {
+            //     await this.payEmployee(this.state.roster[i].address)
                 // await this.state.companyContract.methods.payEmployee(this.state.roster[i].address).send({from: this.state.account, gas: 6721975}).then(console.log)
-            } 
+            // } 
             // await this.state.companyContract.methods.runPayroll().send({from: this.state.account, gas: 6721975}).then(console.log)
 
             await this.addPayrollPaymentsToDB()
