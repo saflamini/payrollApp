@@ -12,6 +12,10 @@
     color: #FFFFFF;
     box-shadow: 0px 1px 5px 0px blue;
     border-radius: 3%;
+    margin-left: 2.5%;
+}
 
-
+.blankCompany {
+    background-color: white;
+    border: 2px solid white;
 }

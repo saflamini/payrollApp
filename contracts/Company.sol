@@ -348,7 +348,9 @@ contract Company is Ownable {
             uint feeTotal;
             // check this math, may need to use safeMath or recalculate
             uint grossPayment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), _withholdings);
+            
             feeTotal = PRBMathUD60x18.mul(protocolFee, grossPayment);
+
             payment = SafeMath.sub(PRBMathUD60x18.mul(employees[_address].salary, paymentInterval), feeTotal);
             tokenContract.safeTransfer(protocolVault, feeTotal);
         }

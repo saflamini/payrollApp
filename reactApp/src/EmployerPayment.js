@@ -28,7 +28,7 @@ class EmployerPayment extends Component {
         return (
             <tr>
                 <td>{this.props.fullName}</td>
-                <td>{this.state.employee_id}</td>
+                {/* <td>{this.state.employee_id}</td> */}
                 <td>{(new Date(Number(this.props.payment_date))).toLocaleDateString()}</td>
                 <td>{this.state.gross_pay}</td>
                 <td>{this.state.federal_tax_withheld}</td>
@@ -38,7 +38,7 @@ class EmployerPayment extends Component {
                 <td>{this.state.employer_medicare_withheld}</td>
                 <td>{this.state.employer_futa_withheld}</td>
                 <td>{this.state.employer_state_u_withheld}</td>
-                <td>{this.state.total_employer_cost}</td>
+                <td><strong>{this.state.total_employer_cost}</strong></td>
             </tr>
         )
     }

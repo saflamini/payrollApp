@@ -919,7 +919,7 @@ export const CompanyABI = [
 export const web3 = new Web3(window.ethereum.currentProvider || "http://127.0.0.1:8545")
 
 //change this over time
-export const CompanyRegistryAddress = "0x9D44c3176FA506c7431Da8EC057f39db557d9586";
+export const CompanyRegistryAddress = "0x0Dfa48c3d23944064bC3F6aC8CB2D6025B443Ee8";
 
 export const CompanyRegistry = new web3.eth.Contract(CompanyRegistryABI, CompanyRegistryAddress);
 
@@ -947,8 +947,7 @@ export const decimals = {
 //export PATH="/Applications/Postgres.app/Contents/Versions/12/bin:$PATH"
 
 
-// (5) 0xeb06d33ce56abbf849c04671a409a6943410aa182d37c115e45aad0fa8f77823
-// (6) 0x2dcf8b16a43bef1a1128cb5a7b52e0cbb857b14b5df55da3a338725fc44e9dfd
-// (7) 0x06e5db0028149efb083a529a92439659b6509599e33e237c0560c19450f73ead
-// (8) 0x74a9e53245046493b04b860a0337b09d3dceb63fba34135fc51aa3c4a0a33c57
-// (9) 0x851ca4c824cd83a4dc88a046640694417f9a26dbae01723d14fcc18f7f22b64c
+// (6) 0x77e3627d4bc05c60357b44e0d56ca28adbb37a83cf5c33b7964a8c0dad4378ab
+// (7) 0xea94dcf8c9c9b523eb17b6b9ffc5ecf6667d85abc7d4cd018c9a3f92744c862c
+// (8) 0xc2bb71658fa94d5b689b62e4d0adc5bcb4cbe4a92f729e307e3772c5b725fbf9
+// (9) 0xd6ead3cda1e2d25277526609d7003f7cd3e2691112cf1b9102959f3706718bea

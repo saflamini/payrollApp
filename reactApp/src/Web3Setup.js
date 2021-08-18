@@ -57,7 +57,7 @@ class Web3Setup extends Component {
             account: "",
             companyRegistry: CompanyRegistry,
             companyContract: null,
-            company: "Please create a new company or connect a wallet",
+            company: "",
             companyAddress: "",
             companyId: null,
             roster: [], 
@@ -119,8 +119,6 @@ class Web3Setup extends Component {
 
     componentDidMount() {
         this.setup()
-        
-        
     }
 
     
@@ -226,8 +224,13 @@ class Web3Setup extends Component {
 
     //gets the company name for display
     async getCompany() {
+        
         let coAddress = await this.state.companyRegistry.methods.getCompanyAddress(this.state.account).call({from: this.state.account});
         console.log(coAddress)
+
+        if(coAddress.length == 0 || coAddress == "0x0000000000000000000000000000000000000000") {
+            this.setState({company: "Please create a new company or connect a wallet"})
+        }
 
         if (coAddress.length !== 0 && coAddress !== "0x0000000000000000000000000000000000000000") {
             const CompanyContract = new web3.eth.Contract(CompanyABI, coAddress);

@@ -36,6 +36,7 @@ class EmployeePayments extends Component {
 
         
         return(
+            <div>
             <Table>
                 <Table responsive striped bordered hover bg="light">
                 <thead>
@@ -71,6 +72,7 @@ class EmployeePayments extends Component {
                     </tbody>
                 </Table>
             </Table>
+            </div>
         )
     }
 }

@@ -223,16 +223,16 @@ class PaymentList extends Component {
                         <thead>
                             <tr>
                             <th>Name</th>
-                            <th>Employee ID</th>
+                            {/* <th>Employee ID</th> */}
                             <th>Payment Date</th>
                             <th>Gross Pay</th>
-                            <th>Federal Taxes</th>
-                            <th>State Taxes</th>
+                            <th>Federal Tax</th>
+                            <th>State Tax</th>
                             <th>Net Pay</th>
-                            <th>Total SS Withheld</th>
-                            <th>Total Medicare Withheld</th>
+                            <th>SS</th>
+                            <th>Medicare</th>
                             <th>FUTA</th>
-                            <th>State Unemp.</th>
+                            <th>State U</th>
                             <th>Total Cost</th>
                             </tr>
                         </thead>

@@ -10,7 +10,7 @@ class Payments extends Component {
     render() {
         return (
             <div>
-                <h1>PaymentList</h1>
+                <h2>Employee Payments</h2>
                 <PaymentList
                 roster={this.props.roster}
                 companyId={this.props.companyId}
